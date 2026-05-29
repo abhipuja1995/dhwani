@@ -60,6 +60,9 @@ class Contact(Base):
     last_dialed_at = Column(DateTime(timezone=True))
     is_dnd = Column(Boolean, default=False)
 
+    # Admin: supervisor pre-assigns a lead to a specific agent
+    assigned_agent_id = Column(String, ForeignKey("agents.id"), index=True)
+
     campaign = relationship("Campaign", back_populates="contacts")
     calls = relationship("Call", back_populates="contact")
 
@@ -79,6 +82,11 @@ class Call(Base):
     started_at = Column(DateTime(timezone=True))
     bridged_at = Column(DateTime(timezone=True))
     ended_at = Column(DateTime(timezone=True))
+
+    disposition = Column(String)          # ptp / callback / refused / no_answer / dispute
+    ptp_amount = Column(Float)
+    ptp_date = Column(DateTime(timezone=True))
+    notes = Column(Text)
 
     campaign = relationship("Campaign", back_populates="calls")
     contact = relationship("Contact", back_populates="calls")

@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dhwani — Admin Console</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f1f5f9;--surface:#fff;--border:#e2e8f0;
+  --text:#0f172a;--muted:#64748b;--subtle:#94a3b8;
+  --blue:#2563eb;--blue-lt:#eff6ff;--blue-md:#bfdbfe;
+  --green:#16a34a;--green-lt:#f0fdf4;--green-md:#bbf7d0;
+  --amber:#d97706;--amber-lt:#fffbeb;--amber-md:#fde68a;
+  --red:#dc2626;--red-lt:#fef2f2;--red-md:#fecaca;
+  --purple:#7c3aed;--purple-lt:#f5f3ff;--purple-md:#ddd6fe;
+  --radius:10px;--shadow:0 1px 3px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.04);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.12);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh}
+
+/* ── Topbar ──────────────────────────────────────────────────────────────── */
+.topbar{
+  background:#0f172a;color:#fff;
+  display:flex;align-items:center;gap:0;
+  padding:0 20px;height:50px;position:sticky;top:0;z-index:100;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.logo{font-size:17px;font-weight:800;letter-spacing:-.5px;color:#fff;margin-right:4px}
+.logo span{color:#60a5fa}
+.logo-sub{font-size:11px;color:#475569;font-weight:500;margin-right:20px}
+.topbar-nav{display:flex;gap:2px}
+.topbar-nav a{
+  color:#94a3b8;padding:6px 12px;border-radius:6px;text-decoration:none;
+  font-size:12px;font-weight:600;transition:.15s;cursor:pointer;letter-spacing:.2px;
+}
+.topbar-nav a:hover{color:#e2e8f0;background:rgba(255,255,255,.07)}
+.topbar-nav a.active{color:#fff;background:rgba(255,255,255,.1)}
+.topbar-spacer{flex:1}
+.live-pill{
+  display:flex;align-items:center;gap:5px;
+  background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);
+  color:#fca5a5;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;
+  margin-right:12px;
+}
+.live-dot{width:6px;height:6px;background:#ef4444;border-radius:50%;animation:blink 1.2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.demo-toggle{
+  padding:5px 14px;border-radius:6px;font-size:12px;font-weight:700;
+  cursor:pointer;border:1px solid rgba(96,165,250,.3);
+  background:rgba(96,165,250,.1);color:#93c5fd;transition:.2s;margin-right:16px;
+}
+.demo-toggle.on{background:rgba(96,165,250,.25);color:#dbeafe;border-color:rgba(96,165,250,.5)}
+.topbar-user{display:flex;align-items:center;gap:8px;font-size:12px;color:#94a3b8}
+.topbar-avatar{
+  width:28px;height:28px;border-radius:50%;
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;
+}
+
+/* ── KPI Bar ─────────────────────────────────────────────────────────────── */
+.kpi-bar{
+  display:grid;grid-template-columns:repeat(6,1fr);
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:12px 20px;gap:0;
+}
+.kpi{
+  padding:4px 16px;border-right:1px solid var(--border);
+  display:flex;flex-direction:column;gap:2px;
+}
+.kpi:first-child{padding-left:0}
+.kpi:last-child{border-right:none}
+.kpi-label{font-size:10px;font-weight:700;letter-spacing:.6px;color:var(--muted);text-transform:uppercase}
+.kpi-value{font-size:22px;font-weight:800;line-height:1.1}
+.kpi-sub{font-size:11px;color:var(--subtle)}
+.kpi-value.green{color:var(--green)}
+.kpi-value.blue{color:var(--blue)}
+.kpi-value.amber{color:var(--amber)}
+.kpi-value.purple{color:var(--purple)}
+.kpi-value.red{color:var(--red)}
+
+/* ── Main layout ─────────────────────────────────────────────────────────── */
+.layout{
+  display:grid;grid-template-columns:1fr 320px;
+  height:calc(100vh - 50px - 72px);/* minus topbar and kpi bar */
+  overflow:hidden;
+}
+.main-col{overflow-y:auto;padding:16px 16px 16px 20px;display:flex;flex-direction:column;gap:16px}
+.side-col{
+  border-left:1px solid var(--border);background:var(--surface);
+  overflow-y:auto;display:flex;flex-direction:column;
+}
+
+/* ── Section chrome ──────────────────────────────────────────────────────── */
+.section-hd{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.section-title{font-size:11px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;color:var(--muted)}
+.chip{
+  padding:1px 8px;border-radius:10px;font-size:11px;font-weight:700;
+  background:var(--border);color:var(--muted);
+}
+.section-hd-actions{margin-left:auto;display:flex;gap:6px}
+
+/* ── Filter tabs ─────────────────────────────────────────────────────────── */
+.ftabs{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap}
+.ftab{
+  padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;
+  cursor:pointer;border:1px solid transparent;color:var(--muted);transition:.15s;
+}
+.ftab:hover{background:var(--border)}
+.ftab.active{background:var(--text);color:#fff;border-color:var(--text)}
+
+/* ── Agent Grid ──────────────────────────────────────────────────────────── */
+.agents-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(248px,1fr));
+  gap:10px;
+}
+
+.agent-card{
+  background:var(--surface);border-radius:var(--radius);
+  border:1px solid var(--border);border-left:3px solid var(--border);
+  box-shadow:var(--shadow);transition:.2s;cursor:pointer;position:relative;overflow:hidden;
+}
+.agent-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-1px)}
+.agent-card.drop-target{border:2px dashed var(--blue);background:var(--blue-lt);transform:scale(1.01)}
+.agent-card.assignment-ready .card-actions{display:flex}
+.agent-card.available{border-left-color:var(--green)}
+.agent-card.in_call{border-left-color:var(--purple)}
+.agent-card.wrap_up{border-left-color:var(--amber)}
+.agent-card.break{border-left-color:var(--subtle)}
+.agent-card.offline{border-left-color:var(--border);opacity:.55}
+
+/* pulse ring on in-call cards */
+.agent-card.in_call::before{
+  content:'';position:absolute;inset:-1px;border-radius:var(--radius);
+  border:2px solid var(--purple);opacity:.4;animation:ring-pulse 2s infinite;
+}
+@keyframes ring-pulse{0%,100%{opacity:.3}50%{opacity:.7}}
+
+.card-top{display:flex;align-items:center;gap:10px;padding:12px 12px 8px}
+.agent-av{
+  width:38px;height:38px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:800;color:#fff;
+}
+.agent-info{flex:1;min-width:0}
+.agent-name{font-weight:700;font-size:14px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.agent-meta{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.skills-tag{
+  padding:1px 6px;background:var(--border);border-radius:4px;
+  font-size:10px;font-weight:600;color:var(--muted);
+}
+.status-pill{
+  padding:2px 8px;border-radius:20px;font-size:10px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.4px;flex-shrink:0;align-self:flex-start;
+}
+.status-pill.available{background:var(--green-lt);color:var(--green)}
+.status-pill.in_call{background:var(--purple-lt);color:var(--purple)}
+.status-pill.wrap_up{background:var(--amber-lt);color:var(--amber)}
+.status-pill.break{background:#f1f5f9;color:var(--muted)}
+.status-pill.offline{background:#f8fafc;color:var(--subtle)}
+
+/* live call section */
+.live-call{
+  margin:0 12px 8px;padding:9px 10px;
+  background:var(--purple-lt);border-radius:7px;border:1px solid var(--purple-md);
+}
+.live-call-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.lc-name{font-weight:700;font-size:12px;color:var(--purple)}
+.lc-timer{font-size:13px;font-weight:800;color:var(--purple);font-variant-numeric:tabular-nums}
+.lc-phone{font-size:10px;color:var(--muted);margin-bottom:5px}
+.sentiment-row{display:flex;align-items:center;gap:6px}
+.sentiment-label{font-size:10px;font-weight:600;color:var(--muted);min-width:56px}
+.sentiment-bar{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.sentiment-fill{height:100%;border-radius:2px;transition:width .8s,background-color .8s}
+
+/* assigned leads badge */
+.assigned-badge{
+  position:absolute;top:10px;right:10px;
+  background:var(--blue);color:#fff;
+  border-radius:12px;padding:1px 7px;font-size:10px;font-weight:800;
+}
+
+/* stats row */
+.card-stats{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  border-top:1px solid var(--border);
+}
+.cstat{text-align:center;padding:7px 4px}
+.cstat-val{font-size:14px;font-weight:800}
+.cstat-val.g{color:var(--green)}
+.cstat-val.p{color:var(--purple)}
+.cstat-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)}
+
+/* action bar — shown on hover or when a lead is selected */
+.card-actions{
+  display:none;padding:0 10px 10px;gap:6px;
+}
+.agent-card:hover .card-actions{display:flex}
+.ca-btn{
+  flex:1;padding:5px 8px;border-radius:6px;font-size:11px;font-weight:700;
+  cursor:pointer;border:1px solid var(--border);background:var(--bg);
+  color:var(--muted);transition:.15s;text-align:center;
+}
+.ca-btn:hover{background:var(--border);color:var(--text)}
+.ca-btn.assign{background:var(--blue);color:#fff;border-color:var(--blue)}
+.ca-btn.assign:hover{background:#1d4ed8}
+.ca-btn.barge{background:var(--red-lt);color:var(--red);border-color:var(--red-md)}
+.ca-btn.barge:hover{background:var(--red-md)}
+
+/* ── Campaign Panel ──────────────────────────────────────────────────────── */
+.camp-list{display:flex;flex-direction:column;gap:10px}
+.camp-card{
+  background:var(--surface);border-radius:var(--radius);
+  border:1px solid var(--border);box-shadow:var(--shadow);padding:14px 16px;
+}
+.camp-hd{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.camp-name{font-weight:700;font-size:14px;flex:1}
+.camp-badge{
+  padding:2px 9px;border-radius:20px;font-size:10px;font-weight:800;text-transform:uppercase;
+}
+.camp-badge.active{background:var(--green-lt);color:var(--green)}
+.camp-badge.paused{background:var(--amber-lt);color:var(--amber)}
+.camp-badge.draft{background:#f1f5f9;color:var(--muted)}
+.camp-badge.completed{background:var(--border);color:var(--muted)}
+
+.camp-prog-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.camp-prog-bar{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.camp-prog-fill{height:100%;border-radius:3px;background:var(--blue);transition:width .5s}
+.camp-prog-txt{font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap}
+
+.camp-stats{display:flex;gap:14px;font-size:11px;color:var(--muted);margin-bottom:10px;flex-wrap:wrap}
+.camp-stat{display:flex;align-items:center;gap:3px}
+.camp-stat strong{color:var(--text);font-weight:700}
+.camp-stat.warn strong{color:var(--amber)}
+.camp-stat.danger strong{color:var(--red)}
+
+.camp-controls{display:flex;align-items:center;gap:8px}
+.ctrl-btn{
+  padding:5px 12px;border-radius:6px;font-size:12px;font-weight:700;
+  cursor:pointer;border:1px solid;transition:.15s;
+}
+.ctrl-btn.start{background:var(--green);color:#fff;border-color:var(--green)}
+.ctrl-btn.pause{background:var(--amber-lt);color:var(--amber);border-color:var(--amber-md)}
+.ctrl-btn.stop{background:var(--red-lt);color:var(--red);border-color:var(--red-md)}
+.ctrl-btn.resume{background:var(--blue);color:#fff;border-color:var(--blue)}
+.ctrl-btn:hover{filter:brightness(.9)}
+.ctrl-btn:disabled{opacity:.4;cursor:default;filter:none}
+.dial-ratio-row{
+  margin-left:auto;display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);
+}
+.dial-ratio-row input[type=range]{width:80px;accent-color:var(--blue)}
+.dr-val{font-weight:700;color:var(--text);min-width:24px}
+
+/* drop-rate gauge */
+.drop-gauge{
+  display:flex;align-items:center;gap:4px;font-size:11px;
+}
+.drop-bar{width:60px;height:4px;background:var(--green-md);border-radius:2px;overflow:hidden}
+.drop-fill{height:100%;border-radius:2px;transition:width .4s,background .4s}
+
+/* ── Right side — Lead Queue ─────────────────────────────────────────────── */
+.leads-hd{
+  padding:14px 14px 10px;border-bottom:1px solid var(--border);
+  position:sticky;top:0;background:var(--surface);z-index:10;
+}
+.leads-title{font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+
+.camp-select{
+  width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:8px;
+  font-size:12px;color:var(--text);background:var(--bg);cursor:pointer;margin-bottom:8px;
+}
+.camp-select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+
+.aa-btn{
+  width:100%;padding:8px;border-radius:8px;font-size:12px;font-weight:800;
+  background:var(--blue);color:#fff;border:none;cursor:pointer;transition:.15s;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.aa-btn:hover{background:#1d4ed8}
+.aa-btn:disabled{background:var(--border);color:var(--muted);cursor:default}
+
+.sel-banner{
+  margin:8px 14px 0;padding:7px 10px;
+  background:var(--blue-lt);border:1px solid var(--blue-md);border-radius:7px;
+  font-size:11px;color:var(--blue);font-weight:700;
+  display:none;align-items:center;justify-content:space-between;
+}
+.sel-banner.show{display:flex}
+.sel-clear{cursor:pointer;font-size:14px;line-height:1}
+
+.leads-list{padding:10px;display:flex;flex-direction:column;gap:7px}
+
+.lead-card{
+  border-radius:8px;border:1px solid var(--border);background:var(--surface);
+  padding:9px 10px;cursor:grab;transition:.2s;position:relative;
+}
+.lead-card:hover{box-shadow:var(--shadow);transform:translateY(-1px)}
+.lead-card.dragging{opacity:.4;cursor:grabbing;transform:rotate(1deg)}
+.lead-card.selected{
+  border-color:var(--blue);background:var(--blue-lt);
+  box-shadow:0 0 0 2px rgba(37,99,235,.2);
+}
+.lead-card.assigned-out{border-color:var(--green);opacity:.65}
+
+.lc-row1{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.lc-score{
+  width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:900;color:#fff;
+}
+.lc-score.high{background:var(--red)}
+.lc-score.med{background:var(--amber)}
+.lc-score.low{background:var(--blue)}
+
+.lc-info{flex:1;min-width:0}
+.lc-name{font-weight:700;font-size:13px;line-height:1.2}
+.lc-camp{font-size:10px;color:var(--muted)}
+
+.lc-badges{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px}
+.lbadge{
+  padding:1px 6px;border-radius:8px;font-size:10px;font-weight:700;
+}
+.lbadge.dpd{background:var(--red-lt);color:var(--red)}
+.lbadge.amt{background:var(--green-lt);color:var(--green)}
+.lbadge.att{background:#f1f5f9;color:var(--muted)}
+.lbadge.asgn{background:var(--purple-lt);color:var(--purple)}
+
+.lc-phone{font-size:10px;color:var(--muted);font-family:monospace}
+
+.lc-assign-btn{
+  position:absolute;right:8px;top:50%;transform:translateY(-50%);
+  padding:4px 9px;border-radius:6px;font-size:10px;font-weight:800;
+  background:var(--blue);color:#fff;border:none;cursor:pointer;
+  opacity:0;transition:.15s;
+}
+.lead-card:hover .lc-assign-btn,.lead-card.selected .lc-assign-btn{opacity:1}
+.lead-card.selected .lc-assign-btn{background:var(--green)}
+
+/* ── Leaderboard ─────────────────────────────────────────────────────────── */
+.leaderboard{
+  background:var(--surface);border-top:1px solid var(--border);
+  padding:0 20px;height:72px;display:flex;align-items:center;gap:0;
+  flex-shrink:0;overflow:hidden;
+}
+.lb-label{
+  font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;
+  color:var(--muted);white-space:nowrap;padding-right:16px;margin-right:8px;
+  border-right:1px solid var(--border);
+}
+.lb-scroll{display:flex;gap:0;overflow:hidden;flex:1}
+.lb-item{
+  display:flex;align-items:center;gap:10px;
+  padding:0 20px;border-right:1px solid var(--border);
+  flex-shrink:0;white-space:nowrap;
+}
+.lb-rank{
+  width:22px;height:22px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;
+}
+.lb-rank.r1{background:#fef3c7;color:#92400e}
+.lb-rank.r2{background:#f1f5f9;color:#374151}
+.lb-rank.r3{background:#fff7ed;color:#c2410c}
+.lb-rank.rn{background:var(--bg);color:var(--muted)}
+.lb-av{
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;color:#fff;flex-shrink:0;
+}
+.lb-name{font-weight:700;font-size:13px}
+.lb-detail{font-size:11px;color:var(--muted)}
+.lb-ptp{font-size:14px;font-weight:800;color:var(--green)}
+
+/* ── Toasts ──────────────────────────────────────────────────────────────── */
+.toasts{position:fixed;top:60px;right:20px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{
+  background:#fff;border-radius:10px;box-shadow:var(--shadow-lg);
+  border-left:4px solid var(--green);padding:10px 14px;
+  min-width:260px;max-width:320px;pointer-events:all;
+  animation:t-in .2s ease;
+}
+.toast.info{border-left-color:var(--blue)}
+.toast.warn{border-left-color:var(--amber)}
+.toast.error{border-left-color:var(--red)}
+@keyframes t-in{from{transform:translateX(16px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes t-out{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(16px)}}
+.toast-ttl{font-weight:700;font-size:13px;margin-bottom:2px}
+.toast-msg{font-size:12px;color:var(--muted)}
+
+/* ── Assignment Modal ────────────────────────────────────────────────────── */
+.overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:500;
+  display:flex;align-items:center;justify-content:center;
+  animation:o-in .15s ease;
+}
+@keyframes o-in{from{opacity:0}to{opacity:1}}
+.modal{
+  background:#fff;border-radius:16px;padding:24px;width:460px;max-width:92vw;
+  box-shadow:var(--shadow-lg);animation:m-in .2s ease;
+}
+@keyframes m-in{from{transform:scale(.96);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-ttl{font-size:17px;font-weight:800;margin-bottom:3px}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:18px}
+.modal-agents{display:flex;flex-direction:column;gap:7px;max-height:340px;overflow-y:auto}
+.modal-agent{
+  display:flex;align-items:center;gap:12px;padding:11px 12px;
+  border-radius:9px;border:1px solid var(--border);cursor:pointer;transition:.15s;
+}
+.modal-agent:hover{background:var(--blue-lt);border-color:var(--blue-md)}
+.modal-agent.disabled{opacity:.35;cursor:not-allowed}
+.modal-agent.disabled:hover{background:transparent;border-color:var(--border)}
+.modal-av{
+  width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;
+}
+.modal-name{font-weight:700;font-size:13px}
+.modal-meta{font-size:11px;color:var(--muted)}
+.modal-cancel{
+  width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);
+  font-size:13px;font-weight:700;cursor:pointer;margin-top:14px;
+  background:var(--bg);color:var(--muted);transition:.15s;
+}
+.modal-cancel:hover{background:var(--border)}
+
+/* ── Empty / loading states ──────────────────────────────────────────────── */
+.empty{text-align:center;padding:32px 16px;color:var(--muted)}
+.empty-icon{font-size:28px;margin-bottom:6px}
+.empty-txt{font-size:13px;font-weight:600}
+.empty-sub{font-size:11px;margin-top:3px;color:var(--subtle)}
+.loading{opacity:.5;font-size:13px;text-align:center;padding:24px;color:var(--muted)}
+
+/* ── Misc ────────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+::-webkit-scrollbar-thumb:hover{background:var(--subtle)}
+.icon-btn{
+  background:none;border:1px solid var(--border);border-radius:6px;
+  padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;color:var(--muted);
+  transition:.15s;display:flex;align-items:center;gap:4px;
+}
+.icon-btn:hover{background:var(--border);color:var(--text)}
+</style>
+</head>
+<body>
+
+<!-- ── Topbar ── -->
+<nav class="topbar">
+  <span class="logo">Dhwani <span>Admin</span></span>
+  <span class="logo-sub">Collections Intelligence</span>
+  <div class="topbar-nav">
+    <a class="active">Dashboard</a>
+    <a href="index.html">Agent UI</a>
+  </div>
+  <div class="topbar-spacer"></div>
+  <div class="live-pill"><span class="live-dot"></span> LIVE</div>
+  <button class="demo-toggle" id="demoToggle" onclick="toggleDemo()">▶ Demo Mode</button>
+  <div class="topbar-user">
+    <div class="topbar-avatar">SA</div>
+    <span>Supervisor</span>
+  </div>
+</nav>
+
+<!-- ── KPI Bar ── -->
+<div class="kpi-bar">
+  <div class="kpi">
+    <div class="kpi-label">Active Calls</div>
+    <div class="kpi-value purple" id="kpiActiveCalls">0</div>
+    <div class="kpi-sub">right now</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Agents Online</div>
+    <div class="kpi-value green" id="kpiOnline">0</div>
+    <div class="kpi-sub" id="kpiOnlineSub">of 0 total</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Available</div>
+    <div class="kpi-value blue" id="kpiAvailable">0</div>
+    <div class="kpi-sub">ready to dial</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">PTPs Today</div>
+    <div class="kpi-value green" id="kpiPtps">0</div>
+    <div class="kpi-sub" id="kpiPtpAmt">₹0 secured</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Calls Today</div>
+    <div class="kpi-value blue" id="kpiCalls">0</div>
+    <div class="kpi-sub">total dialled</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Pending Leads</div>
+    <div class="kpi-value amber" id="kpiPending">0</div>
+    <div class="kpi-sub" id="kpiAssigned">0 assigned</div>
+  </div>
+</div>
+
+<!-- ── Layout ── -->
+<div style="display:flex;flex-direction:column;height:calc(100vh - 50px - 72px)">
+<div class="layout" id="mainLayout">
+
+  <!-- ── Left column ── -->
+  <div class="main-col">
+
+    <!-- Agent monitoring -->
+    <div>
+      <div class="section-hd">
+        <span class="section-title">Live Agents</span>
+        <span class="chip" id="agentCountChip">0</span>
+        <div class="section-hd-actions">
+          <button class="icon-btn" onclick="refreshAll()">↻ Refresh</button>
+        </div>
+      </div>
+      <div class="ftabs" id="agentFilterTabs">
+        <div class="ftab active" data-filter="all" onclick="setFilter('all',this)">All</div>
+        <div class="ftab" data-filter="in_call" onclick="setFilter('in_call',this)">In Call</div>
+        <div class="ftab" data-filter="available" onclick="setFilter('available',this)">Available</div>
+        <div class="ftab" data-filter="wrap_up" onclick="setFilter('wrap_up',this)">Wrap-up</div>
+        <div class="ftab" data-filter="offline" onclick="setFilter('offline',this)">Offline</div>
+      </div>
+      <div class="agents-grid" id="agentsGrid">
+        <div class="loading">Loading agents…</div>
+      </div>
+    </div>
+
+    <!-- Campaigns -->
+    <div>
+      <div class="section-hd">
+        <span class="section-title">Campaigns</span>
+        <span class="chip" id="campChip">0</span>
+      </div>
+      <div class="camp-list" id="campList">
+        <div class="loading">Loading campaigns…</div>
+      </div>
+    </div>
+
+  </div><!-- /main-col -->
+
+  <!-- ── Right column: Lead queue ── -->
+  <div class="side-col">
+    <div class="leads-hd">
+      <div class="leads-title">Lead Assignment Queue</div>
+      <select class="camp-select" id="leadCampFilter" onchange="filterLeads()">
+        <option value="">All Campaigns</option>
+      </select>
+      <button class="aa-btn" id="autoAssignBtn" onclick="autoAssign()">
+        ⚡ Auto-Assign All to Available
+      </button>
+      <div class="sel-banner" id="selBanner">
+        <span id="selBannerTxt">Lead selected — click an agent to assign</span>
+        <span class="sel-clear" onclick="clearSelectedLead()">✕</span>
+      </div>
+    </div>
+    <div class="leads-list" id="leadsList">
+      <div class="loading">Loading leads…</div>
+    </div>
+  </div>
+
+</div><!-- /layout -->
+
+<!-- ── Leaderboard ── -->
+<div class="leaderboard" id="leaderboard">
+  <span class="lb-label">🏆 Today</span>
+  <div class="lb-scroll" id="lbScroll">
+    <div style="padding:0 16px;color:var(--muted);font-size:12px">Loading leaderboard…</div>
+  </div>
+</div>
+</div>
+
+<!-- ── Assignment modal ── -->
+<div class="overlay" id="assignModal" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-ttl">Assign Lead</div>
+    <div class="modal-sub" id="modalSub">Select an available agent</div>
+    <div class="modal-agents" id="modalAgents"></div>
+    <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
+
+<!-- ── Toasts ── -->
+<div class="toasts" id="toasts"></div>
+
+<script>
+const API = 'http://localhost:8000';
+
+// ── Gradient palettes for agent avatars ──────────────────────────────────────
+const GRADIENTS = [
+  'linear-gradient(135deg,#3b82f6,#8b5cf6)',
+  'linear-gradient(135deg,#10b981,#3b82f6)',
+  'linear-gradient(135deg,#f59e0b,#ef4444)',
+  'linear-gradient(135deg,#8b5cf6,#ec4899)',
+  'linear-gradient(135deg,#06b6d4,#3b82f6)',
+  'linear-gradient(135deg,#84cc16,#10b981)',
+];
+function gradientFor(name) {
+  let h = 0; for (const c of name) h = (h * 31 + c.charCodeAt(0)) & 0xffffffff;
+  return GRADIENTS[Math.abs(h) % GRADIENTS.length];
+}
+function initials(name) {
+  return name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+}
+function fmt(secs) {
+  const m = Math.floor(secs/60), s = secs%60;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+function fmtAmt(n) {
+  if (!n) return '₹0';
+  return '₹' + (n >= 100000 ? (n/100000).toFixed(1)+'L' : n >= 1000 ? (n/1000).toFixed(1)+'K' : n);
+}
+
+// ── Global state ─────────────────────────────────────────────────────────────
+const S = {
+  agents: [],
+  leads: [],
+  campaigns: [],
+  leaderboard: [],
+  overview: {},
+  filter: 'all',
+  selectedLeadId: null,
+  selectedLeadName: null,
+  demoMode: false,
+  demoState: {},    // agentId → {status, call, callSecs, sentiment}
+  demoPtps: 0,
+  demoPtpAmt: 0,
+  demoCallsToday: 0,
+  demoIntervals: [],
+};
+
+// ── Fetch helpers ─────────────────────────────────────────────────────────────
+async function apiFetch(path, opts={}) {
+  try {
+    const r = await fetch(API + path, opts);
+    if (!r.ok) return null;
+    return await r.json();
+  } catch { return null; }
+}
+
+async function refreshAll() {
+  const [overview, agents, leads, leaderboard, campaigns] = await Promise.all([
+    apiFetch('/admin/overview'),
+    apiFetch('/admin/agents/live'),
+    apiFetch('/admin/leads/pending?limit=40'),
+    apiFetch('/admin/leaderboard'),
+    apiFetch('/campaigns/'),
+  ]);
+  if (overview) S.overview = overview;
+  if (agents)   S.agents = agents;
+  if (leads)    S.leads = leads;
+  if (leaderboard) S.leaderboard = leaderboard;
+  if (campaigns)   S.campaigns = campaigns;
+  render();
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function render() {
+  renderKPIs();
+  renderAgents();
+  renderLeads();
+  renderCampaigns();
+  renderLeaderboard();
+  renderCampDropdown();
+}
+
+function renderKPIs() {
+  const o = S.overview;
+  const demoInCall = S.demoMode ? Object.values(S.demoState).filter(d=>d.status==='in_call').length : 0;
+  const demoAvail  = S.demoMode ? Object.values(S.demoState).filter(d=>d.status==='available').length : 0;
+  const demoOnline = S.demoMode ? Object.values(S.demoState).filter(d=>d.status!=='offline').length : 0;
+
+  set('kpiActiveCalls', (o.agents_in_call||0) + demoInCall);
+  set('kpiOnline',      (o.agents_online||0) + (S.demoMode ? Math.max(0,demoOnline - (o.agents_online||0)) : 0));
+  set('kpiOnlineSub',   `of ${o.agents_total||0} total`);
+  set('kpiAvailable',   (o.agents_available||0) + (S.demoMode ? Math.max(0,demoAvail - (o.agents_available||0)) : 0));
+  set('kpiPtps',        (o.ptps_today||0) + S.demoPtps);
+  set('kpiPtpAmt',      fmtAmt((o.ptp_amount_today||0) + S.demoPtpAmt) + ' secured');
+  set('kpiCalls',       (o.calls_today||0) + S.demoCallsToday);
+  set('kpiPending',     o.pending_leads||0);
+  set('kpiAssigned',    `${o.assigned_leads||0} assigned`);
+}
+
+function renderAgents() {
+  const grid = document.getElementById('agentsGrid');
+  let agents = mergedAgents();
+  if (S.filter !== 'all') agents = agents.filter(a => a.status === S.filter);
+  document.getElementById('agentCountChip').textContent = agents.length;
+
+  if (!agents.length) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">👤</div><div class="empty-txt">No agents match this filter</div></div>`;
+    return;
+  }
+
+  grid.innerHTML = agents.map(a => agentCardHTML(a)).join('');
+
+  // Drag-to-assign: highlight available cards when dragging a lead
+  agents.forEach(a => {
+    const card = document.getElementById('ac-'+a.id);
+    if (!card) return;
+
+    card.addEventListener('dragover', e => {
+      if (a.status === 'available' || a.status === 'wrap_up') {
+        e.preventDefault();
+        card.classList.add('drop-target');
+      }
+    });
+    card.addEventListener('dragleave', () => card.classList.remove('drop-target'));
+    card.addEventListener('drop', e => {
+      e.preventDefault();
+      card.classList.remove('drop-target');
+      const leadId = e.dataTransfer.getData('leadId');
+      const leadName = e.dataTransfer.getData('leadName');
+      if (leadId) doAssign(leadId, leadName, a.id, a.display_name);
+    });
+  });
+
+  // Tick timers
+  agents.filter(a=>a.status==='in_call' && a.current_call).forEach(a => {
+    tickTimer('timer-'+a.id, a.current_call.duration_seconds);
+  });
+}
+
+function agentCardHTML(a) {
+  const grad = gradientFor(a.display_name);
+  const ini  = initials(a.display_name);
+  const statusLabels = {available:'Available',in_call:'In Call',wrap_up:'Wrap-up',break:'Break',offline:'Offline'};
+  const sl = statusLabels[a.status] || a.status;
+  const assignedClass = S.selectedLeadId ? 'assignment-ready' : '';
+
+  // live call block
+  let callBlock = '';
+  if (a.status === 'in_call' && a.current_call) {
+    const c = a.current_call;
+    const sentPct = (a._sentiment||50);
+    const sentCol = sentPct > 65 ? '#16a34a' : sentPct > 40 ? '#d97706' : '#dc2626';
+    const sentLbl = sentPct > 65 ? 'Positive' : sentPct > 40 ? 'Neutral' : 'At Risk';
+    callBlock = `
+      <div class="live-call">
+        <div class="live-call-hd">
+          <span class="lc-name">${esc(c.customer_name)}</span>
+          <span class="lc-timer" id="timer-${a.id}">${fmt(c.duration_seconds||0)}</span>
+        </div>
+        <div class="lc-phone">${esc(c.customer_phone)}</div>
+        <div class="sentiment-row">
+          <span class="sentiment-label">${sentLbl}</span>
+          <div class="sentiment-bar">
+            <div class="sentiment-fill" style="width:${sentPct}%;background:${sentCol}"></div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // assigned leads badge
+  const abadge = a.assigned_leads > 0
+    ? `<div class="assigned-badge">${a.assigned_leads}</div>` : '';
+
+  const t = a.today || {};
+  const actionRow = `
+    <div class="card-actions">
+      ${a.status === 'available' && S.selectedLeadId
+        ? `<div class="ca-btn assign" onclick="doAssign('${S.selectedLeadId}','${esc(S.selectedLeadName)}','${a.id}','${esc(a.display_name)}')">Assign Selected Lead →</div>`
+        : a.status === 'available'
+          ? `<div class="ca-btn assign" onclick="openModal('${a.id}','${esc(a.display_name)}')">Assign Lead</div>`
+          : ''
+      }
+      ${a.status === 'in_call' ? `<div class="ca-btn barge" onclick="showBarge('${esc(a.display_name)}')">🎧 Monitor</div>` : ''}
+    </div>`;
+
+  return `
+    <div class="agent-card ${a.status} ${assignedClass}" id="ac-${a.id}">
+      ${abadge}
+      <div class="card-top">
+        <div class="agent-av" style="background:${grad}">${ini}</div>
+        <div class="agent-info">
+          <div class="agent-name">${esc(a.display_name)}</div>
+          <div class="agent-meta">
+            <span>${a.username}</span>
+            ${(a.skills||[]).slice(0,2).map(s=>`<span class="skills-tag">${esc(s)}</span>`).join('')}
+          </div>
+        </div>
+        <div class="status-pill ${a.status}">${sl}</div>
+      </div>
+      ${callBlock}
+      <div class="card-stats">
+        <div class="cstat"><div class="cstat-val">${t.calls||0}</div><div class="cstat-lbl">Calls</div></div>
+        <div class="cstat"><div class="cstat-val g">${t.ptps||0}</div><div class="cstat-lbl">PTPs</div></div>
+        <div class="cstat"><div class="cstat-val p">${fmtAmt(t.ptp_amount||0)}</div><div class="cstat-lbl">Secured</div></div>
+      </div>
+      ${actionRow}
+    </div>`;
+}
+
+function renderLeads() {
+  const list = document.getElementById('leadsList');
+  const filt = document.getElementById('leadCampFilter').value;
+  let leads = S.leads.filter(l => !filt || l.campaign_id === filt);
+
+  if (!leads.length) {
+    list.innerHTML = `<div class="empty"><div class="empty-icon">📋</div><div class="empty-txt">No pending leads</div><div class="empty-sub">All leads have been assigned or dialled</div></div>`;
+    return;
+  }
+
+  list.innerHTML = leads.map(l => leadCardHTML(l)).join('');
+
+  // Wire up drag
+  leads.forEach(l => {
+    const card = document.getElementById('lc-'+l.id);
+    if (!card) return;
+    card.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('leadId', l.id);
+      e.dataTransfer.setData('leadName', l.name);
+      e.dataTransfer.effectAllowed = 'move';
+      card.classList.add('dragging');
+    });
+    card.addEventListener('dragend', () => card.classList.remove('dragging'));
+    card.addEventListener('click', () => toggleSelectedLead(l.id, l.name));
+  });
+}
+
+function leadCardHTML(l) {
+  const score = l.priority_score || 0;
+  const scoreCls = score >= 70 ? 'high' : score >= 40 ? 'med' : 'low';
+  const isSelected = S.selectedLeadId === l.id;
+  const isAssigned = !!l.assigned_agent_id;
+
+  const dpd    = l.dpd    ? `<span class="lbadge dpd">${l.dpd}d DPD</span>` : '';
+  const amt    = l.outstanding ? `<span class="lbadge amt">₹${(l.outstanding/1000).toFixed(0)}K</span>` : '';
+  const att    = `<span class="lbadge att">${l.attempts} attempts</span>`;
+  const asgn   = l.assigned_agent_name ? `<span class="lbadge asgn">→ ${esc(l.assigned_agent_name)}</span>` : '';
+
+  return `
+    <div class="lead-card ${isSelected?'selected':''} ${isAssigned?'assigned-out':''}"
+         id="lc-${l.id}" draggable="true">
+      <div class="lc-row1">
+        <div class="lc-score ${scoreCls}">${score}</div>
+        <div class="lc-info">
+          <div class="lc-name">${esc(l.name)}</div>
+          <div class="lc-camp">${esc(l.campaign_name)}</div>
+        </div>
+      </div>
+      <div class="lc-badges">${dpd}${amt}${att}${asgn}</div>
+      <div class="lc-phone">${esc(l.phone)}</div>
+      <button class="lc-assign-btn" onclick="event.stopPropagation();openModalForLead('${l.id}','${esc(l.name)}')">
+        ${isSelected ? 'Click Agent →' : 'Assign'}
+      </button>
+    </div>`;
+}
+
+function renderCampaigns() {
+  const list = document.getElementById('campList');
+  if (!S.campaigns.length) {
+    list.innerHTML = `<div class="empty"><div class="empty-icon">📣</div><div class="empty-txt">No campaigns yet</div></div>`;
+    return;
+  }
+
+  list.innerHTML = S.campaigns.map(c => {
+    const pct = c.total_contacts > 0 ? Math.round(c.dialed / c.total_contacts * 100) : 0;
+    const dropPct = (c.current_drop_rate * 100).toFixed(1);
+    const dropDanger = parseFloat(dropPct) > 2.5 ? 'danger' : parseFloat(dropPct) > 1.5 ? 'warn' : '';
+    const dropFillColor = parseFloat(dropPct) > 2.5 ? '#dc2626' : parseFloat(dropPct) > 1.5 ? '#d97706' : '#16a34a';
+
+    const startBtn = c.status === 'draft' || c.status === 'paused'
+      ? `<button class="ctrl-btn ${c.status==='paused'?'resume':'start'}" onclick="updateCampaign('${c.id}','active')">▶ ${c.status==='paused'?'Resume':'Start'}</button>` : '';
+    const pauseBtn = c.status === 'active'
+      ? `<button class="ctrl-btn pause" onclick="updateCampaign('${c.id}','paused')">⏸ Pause</button>` : '';
+    const stopBtn = c.status !== 'draft' && c.status !== 'completed'
+      ? `<button class="ctrl-btn stop" onclick="updateCampaign('${c.id}','cancelled')">⏹ Stop</button>` : '';
+
+    return `
+      <div class="camp-card">
+        <div class="camp-hd">
+          <span class="camp-name">${esc(c.name)}</span>
+          <span class="camp-badge ${c.status}">${c.status.toUpperCase()}</span>
+        </div>
+        <div class="camp-prog-row">
+          <div class="camp-prog-bar"><div class="camp-prog-fill" style="width:${pct}%"></div></div>
+          <span class="camp-prog-txt">${c.dialed}/${c.total_contacts} (${pct}%)</span>
+        </div>
+        <div class="camp-stats">
+          <span class="camp-stat">Connect <strong>${c.total_contacts>0?Math.round(c.answered/Math.max(c.dialed,1)*100):0}%</strong></span>
+          <span class="camp-stat ${dropDanger}">
+            Drop Rate
+            <strong>${dropPct}%</strong>
+            <div class="drop-bar"><div class="drop-fill" style="width:${Math.min(100,parseFloat(dropPct)/3*100)}%;background:${dropFillColor}"></div></div>
+          </span>
+          <span class="camp-stat">Mode <strong>${c.dial_mode}</strong></span>
+          <span class="camp-stat">Hours <strong>${c.calling_hours_start}–${c.calling_hours_end}</strong></span>
+        </div>
+        <div class="camp-controls">
+          ${startBtn}${pauseBtn}${stopBtn}
+          <div class="dial-ratio-row">
+            Dial Ratio
+            <input type="range" min="1" max="4" step="0.5" value="${c.dial_ratio||1.5}"
+              oninput="this.nextElementSibling.textContent=this.value"
+              onchange="updateDialRatio('${c.id}',this.value)">
+            <span class="dr-val">${c.dial_ratio||1.5}×</span>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderLeaderboard() {
+  const scroll = document.getElementById('lbScroll');
+  let board = [...S.leaderboard];
+
+  // Inject demo stats
+  if (S.demoMode) {
+    board = board.map(item => ({
+      ...item,
+      calls: item.calls + (S.demoState[item.agent_id]?.demoCallsToday||0),
+      ptps:  item.ptps  + (S.demoState[item.agent_id]?.demoPtps||0),
+      ptp_amount: item.ptp_amount + (S.demoState[item.agent_id]?.demoPtpAmt||0),
+    }));
+    board.sort((a,b) => (b.ptp_amount - a.ptp_amount) || (b.calls - a.calls));
+  }
+
+  if (!board.length) {
+    scroll.innerHTML = `<div style="padding:0 16px;color:var(--muted);font-size:12px">No data yet today</div>`;
+    return;
+  }
+
+  scroll.innerHTML = board.map((item, i) => {
+    const rn  = i < 3 ? `r${i+1}` : 'rn';
+    const lbl = i < 3 ? ['🥇','🥈','🥉'][i] : `#${i+1}`;
+    const grad = gradientFor(item.display_name);
+    const ini  = initials(item.display_name);
+    const dot  = `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${item.status==='available'?'#16a34a':item.status==='in_call'?'#7c3aed':item.status==='wrap_up'?'#d97706':'#94a3b8'};margin-right:4px;vertical-align:middle"></span>`;
+    return `
+      <div class="lb-item">
+        <div class="lb-rank ${rn}">${lbl}</div>
+        <div class="lb-av" style="background:${grad}">${ini}</div>
+        <div>
+          <div class="lb-name">${dot}${esc(item.display_name)}</div>
+          <div class="lb-detail">${item.calls} calls · ${item.ptps} PTPs · AHT ${fmt(item.avg_handle_time||0)}</div>
+        </div>
+        <div class="lb-ptp">${fmtAmt(item.ptp_amount)}</div>
+      </div>`;
+  }).join('');
+}
+
+function renderCampDropdown() {
+  const sel = document.getElementById('leadCampFilter');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">All Campaigns</option>' +
+    S.campaigns.map(c => `<option value="${c.id}" ${c.id===cur?'selected':''}>${esc(c.name)}</option>`).join('');
+}
+
+// ── Assignment flow ───────────────────────────────────────────────────────────
+function toggleSelectedLead(id, name) {
+  if (S.selectedLeadId === id) {
+    clearSelectedLead();
+  } else {
+    S.selectedLeadId = id;
+    S.selectedLeadName = name;
+    const banner = document.getElementById('selBanner');
+    document.getElementById('selBannerTxt').textContent = `"${name}" selected — drag to agent or click Assign`;
+    banner.classList.add('show');
+    renderAgents();
+    renderLeads();
+  }
+}
+
+function clearSelectedLead() {
+  S.selectedLeadId = null;
+  S.selectedLeadName = null;
+  document.getElementById('selBanner').classList.remove('show');
+  renderAgents();
+  renderLeads();
+}
+
+function openModalForLead(leadId, leadName) {
+  S.selectedLeadId = leadId;
+  S.selectedLeadName = leadName;
+  openModal(null, null);
+}
+
+function openModal(preAgentId, preAgentName) {
+  if (!S.selectedLeadId) { toast('Select a lead first','warn'); return; }
+  const lead = S.leads.find(l=>l.id===S.selectedLeadId);
+  document.getElementById('modalSub').textContent = `Assigning: ${lead ? lead.name : 'lead'} — pick an agent`;
+
+  const agents = mergedAgents();
+  document.getElementById('modalAgents').innerHTML = agents.map(a => {
+    const grad = gradientFor(a.display_name);
+    const ini  = initials(a.display_name);
+    const canAssign = a.status === 'available' || a.status === 'wrap_up';
+    const label = a.status === 'available' ? '🟢 Available' : a.status === 'in_call' ? '🟣 In Call' : a.status === 'wrap_up' ? '🟡 Wrap-up' : '⚫ Offline';
+    return `
+      <div class="modal-agent ${canAssign?'':'disabled'}"
+           onclick="${canAssign?`confirmAssign('${S.selectedLeadId}','${esc(S.selectedLeadName)}','${a.id}','${esc(a.display_name)}')`:''}" >
+        <div class="modal-av" style="background:${grad}">${ini}</div>
+        <div>
+          <div class="modal-name">${esc(a.display_name)}</div>
+          <div class="modal-meta">${label} · ${a.assigned_leads} leads in queue · ${(a.today||{}).calls||0} calls today</div>
+        </div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('assignModal').style.display = 'flex';
+}
+
+function confirmAssign(leadId, leadName, agentId, agentName) {
+  closeModal();
+  doAssign(leadId, leadName, agentId, agentName);
+}
+
+function closeModal() {
+  document.getElementById('assignModal').style.display = 'none';
+}
+
+async function doAssign(leadId, leadName, agentId, agentName) {
+  const r = await apiFetch(`/admin/leads/${leadId}/assign/${agentId}`, {method:'POST'});
+  if (r) {
+    toast(`✓ ${leadName} assigned to ${agentName}`, 'success');
+    clearSelectedLead();
+    // Optimistically update local state
+    const lead = S.leads.find(l=>l.id===leadId);
+    if (lead) { lead.assigned_agent_id=agentId; lead.assigned_agent_name=agentName; }
+    const agent = S.agents.find(a=>a.id===agentId);
+    if (agent) agent.assigned_leads = (agent.assigned_leads||0)+1;
+    S.overview.assigned_leads = (S.overview.assigned_leads||0)+1;
+    render();
+  } else {
+    toast('Assignment failed — check API', 'error');
+  }
+}
+
+async function autoAssign() {
+  const campId = document.getElementById('leadCampFilter').value;
+  const url = '/admin/leads/auto-assign' + (campId ? `?campaign_id=${campId}` : '');
+  const r = await apiFetch(url, {method:'POST'});
+  if (r) {
+    toast(`⚡ ${r.message}`, 'success');
+    await refreshAll();
+  } else {
+    toast('Auto-assign failed — no available agents?', 'warn');
+  }
+}
+
+async function updateCampaign(id, status) {
+  const r = await apiFetch(`/campaigns/${id}`, {
+    method:'PATCH',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({status})
+  });
+  if (r) {
+    toast(`Campaign ${status}`, 'info');
+    await refreshAll();
+  }
+}
+
+async function updateDialRatio(id, ratio) {
+  await apiFetch(`/campaigns/${id}`, {
+    method:'PATCH',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({dial_ratio: parseFloat(ratio)})
+  });
+}
+
+// ── Filter ────────────────────────────────────────────────────────────────────
+function setFilter(f, el) {
+  S.filter = f;
+  document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderAgents();
+}
+
+function filterLeads() { renderLeads(); }
+
+// ── Merged agents (real + demo overlay) ──────────────────────────────────────
+function mergedAgents() {
+  if (!S.demoMode) return S.agents;
+  return S.agents.map(a => {
+    const d = S.demoState[a.id];
+    if (!d) return a;
+    return {
+      ...a,
+      status: d.status,
+      current_call: d.status === 'in_call' ? d.call : null,
+      _sentiment: d.sentiment,
+      today: {
+        calls:      (a.today?.calls||0)      + (d.demoCallsToday||0),
+        ptps:       (a.today?.ptps||0)       + (d.demoPtps||0),
+        ptp_amount: (a.today?.ptp_amount||0) + (d.demoPtpAmt||0),
+      }
+    };
+  });
+}
+
+// ── Demo simulation ───────────────────────────────────────────────────────────
+const DEMO_CUSTOMERS = [
+  {name:'Rajesh Kumar',phone:'+91 98765 43210',dpd:30,amt:12500},
+  {name:'Sunita Rao',phone:'+91 87654 32109',dpd:45,amt:14000},
+  {name:'Mohan Iyer',phone:'+91 76543 21098',dpd:8,amt:9800},
+  {name:'Kavita Mehta',phone:'+91 91234 56789',dpd:15,amt:6500},
+  {name:'Arjun Nair',phone:'+91 80000 12345',dpd:60,amt:22000},
+  {name:'Preethi Das',phone:'+91 99876 54321',dpd:5,amt:4200},
+];
+const PTP_EVENTS = [
+  {name:'Sunita Rao',amt:7000,msg:'Will pay ₹7,000 by Friday'},
+  {name:'Rajesh Kumar',amt:12500,msg:'Full payment committed by month-end'},
+  {name:'Mohan Iyer',amt:5000,msg:'₹5,000 installment agreed'},
+  {name:'Kavita Mehta',amt:3250,msg:'50% of dues committed'},
+  {name:'Arjun Nair',amt:11000,msg:'₹11,000 in 2 installments'},
+];
+
+function toggleDemo() {
+  S.demoMode = !S.demoMode;
+  const btn = document.getElementById('demoToggle');
+  if (S.demoMode) {
+    btn.textContent = '■ Stop Demo';
+    btn.classList.add('on');
+    startDemo();
+  } else {
+    btn.textContent = '▶ Demo Mode';
+    btn.classList.remove('on');
+    stopDemo();
+  }
+}
+
+function startDemo() {
+  S.demoPtps = 0; S.demoPtpAmt = 0; S.demoCallsToday = 0;
+  S.demoState = {};
+  const agents = S.agents;
+
+  // Initial state: first 2-3 agents in_call, rest available
+  agents.forEach((a, i) => {
+    if (i < Math.min(2, agents.length)) {
+      const cust = DEMO_CUSTOMERS[i % DEMO_CUSTOMERS.length];
+      S.demoState[a.id] = {
+        status: 'in_call',
+        call: {customer_name:cust.name, customer_phone:cust.phone, duration_seconds: 45+i*30, status:'bridged'},
+        callSecs: 45+i*30,
+        sentiment: 50,
+        demoCallsToday: 2+i,
+        demoPtps: i,
+        demoPtpAmt: i * 8500,
+        _custIdx: i,
+      };
+    } else {
+      S.demoState[a.id] = {
+        status: 'available', call:null, callSecs:0, sentiment:50,
+        demoCallsToday:1, demoPtps:0, demoPtpAmt:0, _custIdx:i,
+      };
+    }
+  });
+
+  // Tick call durations + sentiment every second
+  S.demoIntervals.push(setInterval(() => {
+    let changed = false;
+    Object.values(S.demoState).forEach(d => {
+      if (d.status === 'in_call') {
+        d.callSecs++;
+        if (d.call) d.call.duration_seconds = d.callSecs;
+        // Drift sentiment
+        d.sentiment = Math.max(10, Math.min(95, d.sentiment + (Math.random()-0.45)*4));
+        changed = true;
+      }
+    });
+    if (changed) {
+      renderAgents();
+      renderKPIs();
+    }
+  }, 1000));
+
+  // Call lifecycle: end call → wrap_up → available → new call
+  S.demoIntervals.push(setInterval(() => {
+    const inCall = Object.entries(S.demoState).filter(([,d])=>d.status==='in_call');
+    if (inCall.length === 0) return;
+    const [agentId, d] = inCall[Math.floor(Math.random()*inCall.length)];
+
+    // Decide outcome
+    const isPtp = Math.random() > 0.45;
+    if (isPtp) {
+      const ev = PTP_EVENTS[Math.floor(Math.random()*PTP_EVENTS.length)];
+      d.demoPtps = (d.demoPtps||0)+1;
+      d.demoPtpAmt = (d.demoPtpAmt||0)+ev.amt;
+      S.demoPtps++; S.demoPtpAmt += ev.amt;
+      S.demoCallsToday++;
+      const agent = S.agents.find(a=>a.id===agentId);
+      toast(`🎉 ${agent?.display_name||'Agent'} secured PTP — ${ev.msg}`, 'success');
+    }
+
+    d.demoCallsToday = (d.demoCallsToday||0)+1;
+    d.status = 'wrap_up';
+    d.call = null;
+    d.callSecs = 0;
+    renderAgents();
+    renderKPIs();
+    renderLeaderboard();
+
+    // After wrap-up, become available
+    setTimeout(() => {
+      if (!S.demoMode) return;
+      d.status = 'available';
+      d.sentiment = 50;
+      renderAgents();
+      renderKPIs();
+    }, 8000 + Math.random()*12000);
+
+  }, 18000 + Math.random()*12000));
+
+  // Available agents pick up new calls
+  S.demoIntervals.push(setInterval(() => {
+    const avail = Object.entries(S.demoState).filter(([,d])=>d.status==='available');
+    if (!avail.length) return;
+    const [agentId, d] = avail[Math.floor(Math.random()*avail.length)];
+    const cust = DEMO_CUSTOMERS[Math.floor(Math.random()*DEMO_CUSTOMERS.length)];
+    d.status = 'in_call';
+    d.call = {customer_name:cust.name, customer_phone:cust.phone, duration_seconds:0, status:'bridged'};
+    d.callSecs = 0;
+    d.sentiment = 50;
+    const agent = S.agents.find(a=>a.id===agentId);
+    toast(`📞 ${agent?.display_name||'Agent'} connected with ${cust.name}`, 'info');
+    renderAgents();
+    renderKPIs();
+  }, 12000 + Math.random()*8000));
+
+  render();
+  toast('Demo mode started — simulating live floor activity', 'info');
+}
+
+function stopDemo() {
+  S.demoIntervals.forEach(clearInterval);
+  S.demoIntervals = [];
+  S.demoState = {};
+  S.demoPtps = 0; S.demoPtpAmt = 0; S.demoCallsToday = 0;
+  render();
+  toast('Demo mode stopped — showing real API data', 'info');
+}
+
+// ── Timer ticking ─────────────────────────────────────────────────────────────
+const timerRefs = {};
+function tickTimer(id, initial) {
+  if (timerRefs[id]) clearInterval(timerRefs[id]);
+  let secs = initial || 0;
+  const el = document.getElementById(id);
+  if (!el) return;
+  timerRefs[id] = setInterval(() => {
+    secs++;
+    const e = document.getElementById(id);
+    if (!e) { clearInterval(timerRefs[id]); return; }
+    e.textContent = fmt(secs);
+  }, 1000);
+}
+
+// ── Toast system ──────────────────────────────────────────────────────────────
+function toast(msg, type='success') {
+  const container = document.getElementById('toasts');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  const [title, ...rest] = msg.split(' — ');
+  el.innerHTML = `<div class="toast-ttl">${esc(title)}</div>${rest.length?`<div class="toast-msg">${esc(rest.join(' — '))}</div>`:''}`;
+  container.appendChild(el);
+  setTimeout(() => {
+    el.style.animation = 't-out .2s ease forwards';
+    setTimeout(()=>el.remove(), 220);
+  }, 3500);
+}
+
+// ── Misc helpers ──────────────────────────────────────────────────────────────
+function set(id, val) { const e=document.getElementById(id); if(e) e.textContent=val; }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+function showBarge(name) {
+  toast(`Monitoring call — ${name} — barge/whisper requires FreeSWITCH ESL`, 'info');
+}
+
+// ── Init + auto-refresh ───────────────────────────────────────────────────────
+(async function init() {
+  await refreshAll();
+  setInterval(refreshAll, 8000);
+})();
+</script>
+</body>
+</html>

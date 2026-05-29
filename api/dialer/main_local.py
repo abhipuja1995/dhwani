@@ -24,11 +24,25 @@ log = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Auto-create tables (no Alembic needed for local dev)
+    from sqlalchemy import text
     from dialer.db import engine
     from dialer.tables import Base
+
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        # Idempotent migrations for columns added after initial DB creation
+        for stmt in [
+            "ALTER TABLE contacts ADD COLUMN assigned_agent_id VARCHAR REFERENCES agents(id)",
+            "ALTER TABLE calls ADD COLUMN disposition VARCHAR",
+            "ALTER TABLE calls ADD COLUMN ptp_amount FLOAT",
+            "ALTER TABLE calls ADD COLUMN ptp_date DATETIME",
+            "ALTER TABLE calls ADD COLUMN notes TEXT",
+        ]:
+            try:
+                await conn.execute(text(stmt))
+            except Exception:
+                pass  # column already exists — safe to ignore
+
     log.info("SQLite tables ready")
     yield
 
@@ -46,9 +60,11 @@ app.add_middleware(
 # Routers
 from dialer.campaigns.router import router as campaigns_router
 from dialer.agents.router import router as agents_router
+from dialer.admin.router import router as admin_router
 
 app.include_router(campaigns_router)
 app.include_router(agents_router)
+app.include_router(admin_router)
 
 
 @app.get("/health")

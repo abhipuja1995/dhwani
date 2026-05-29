@@ -1,0 +1,36 @@
+<include>
+  <!-- Agent extensions are provisioned dynamically via XML curl from the API.
+       This file holds static test agents for local dev.
+       Production: set xml_curl to hit http://api:8000/fs/directory -->
+
+  <user id="agent_001">
+    <params>
+      <param name="password" value="agent001pass"/>
+      <param name="vm-password" value="1234"/>
+    </params>
+    <variables>
+      <variable name="toll_allow" value="local,domestic,international"/>
+      <variable name="accountcode" value="agent_001"/>
+      <variable name="user_context" value="default"/>
+      <variable name="effective_caller_id_name" value="Agent 001"/>
+      <variable name="effective_caller_id_number" value="agent_001"/>
+      <variable name="outbound_caller_id_name" value="Agent 001"/>
+      <variable name="outbound_caller_id_number" value="agent_001"/>
+    </variables>
+  </user>
+
+  <user id="agent_002">
+    <params>
+      <param name="password" value="agent002pass"/>
+      <param name="vm-password" value="1234"/>
+    </params>
+    <variables>
+      <variable name="toll_allow" value="local,domestic,international"/>
+      <variable name="accountcode" value="agent_002"/>
+      <variable name="user_context" value="default"/>
+      <variable name="effective_caller_id_name" value="Agent 002"/>
+      <variable name="effective_caller_id_number" value="agent_002"/>
+    </variables>
+  </user>
+
+</include>

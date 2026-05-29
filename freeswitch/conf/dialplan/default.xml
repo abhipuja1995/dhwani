@@ -1,0 +1,66 @@
+<include>
+  <context name="default">
+
+    <!-- Agent-to-agent internal calls (testing over WiFi) -->
+    <extension name="internal_agent">
+      <condition field="destination_number" expression="^(agent_\d+)$">
+        <action application="set" data="call_timeout=30"/>
+        <action application="set" data="hangup_after_bridge=true"/>
+        <action application="bridge" data="user/$1@$${domain}"/>
+      </condition>
+    </extension>
+
+    <!-- Outbound predictive dial leg: dialer originates to customer number -->
+    <!-- After AMD passes, ESL bridges this leg to waiting agent via uuid_bridge -->
+    <extension name="outbound_customer">
+      <condition field="destination_number" expression="^(outbound_.+)$">
+        <action application="set" data="hangup_after_bridge=false"/>
+        <action application="set" data="park_after_bridge=false"/>
+        <!-- AMD detection: fires DETECTED_SPEECH event back to ESL -->
+        <action application="set" data="execute_on_answer=detect_speech unimrcp ${amd_initial_silence} ${amd_greeting} ${amd_after_greeting_silence} ${amd_total_analysis_time}"/>
+        <action application="answer"/>
+        <action application="park"/>
+      </condition>
+    </extension>
+
+    <!-- PSTN outbound via SIP trunk; falls back to echo for WiFi testing when no trunk configured -->
+    <extension name="outbound_pstn">
+      <condition field="destination_number" expression="^\+?(\d{7,})$">
+        <action application="set" data="effective_caller_id_name=$${outbound_caller_id_name}"/>
+        <action application="set" data="effective_caller_id_number=$${outbound_caller_id_number}"/>
+        <action application="set" data="hangup_after_bridge=true"/>
+        <action application="set" data="continue_on_fail=true"/>
+        <!-- Try SIP trunk first (real PSTN calls) -->
+        <action application="bridge" data="sofia/gateway/pstn_trunk/$1"/>
+        <!-- Trunk not configured / failed → simulate answered call for WiFi testing -->
+        <action application="answer"/>
+        <action application="playback" data="tone_stream://%(2000,4000,440,480)"/>
+        <action application="echo"/>
+      </condition>
+    </extension>
+
+    <!-- Agent hold music while waiting for customer bridge -->
+    <extension name="agent_hold">
+      <condition field="destination_number" expression="^hold_music$">
+        <action application="playback" data="local_stream://moh"/>
+      </condition>
+    </extension>
+
+    <!-- Echo test for WebRTC connectivity check -->
+    <extension name="echo_test">
+      <condition field="destination_number" expression="^9196$">
+        <action application="answer"/>
+        <action application="echo"/>
+      </condition>
+    </extension>
+
+    <!-- Milliwatt tone for audio level testing -->
+    <extension name="milliwatt">
+      <condition field="destination_number" expression="^9197$">
+        <action application="answer"/>
+        <action application="playback" data="tone_stream://%(251,0,1004)"/>
+      </condition>
+    </extension>
+
+  </context>
+</include>

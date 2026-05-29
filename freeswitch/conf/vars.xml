@@ -1,0 +1,33 @@
+<include>
+  <!-- Domain / network -->
+  <X-PRE-PROCESS cmd="set" data="domain=$${local_ip_v4}"/>
+  <X-PRE-PROCESS cmd="set" data="domain_name=$${domain}"/>
+  <X-PRE-PROCESS cmd="set" data="hold_music=local_stream://moh"/>
+  <X-PRE-PROCESS cmd="set" data="use_profile=internal"/>
+
+  <!-- WSS / WebRTC -->
+  <X-PRE-PROCESS cmd="set" data="wss_binding=:7443"/>
+  <X-PRE-PROCESS cmd="set" data="internal_tls_port=5061"/>
+
+  <!-- Codec preferences -->
+  <X-PRE-PROCESS cmd="set" data="global_codec_prefs=OPUS,PCMU,PCMA,G722"/>
+  <X-PRE-PROCESS cmd="set" data="outbound_codec_prefs=OPUS,PCMU,PCMA,G722"/>
+
+  <!-- RTP port range -->
+  <X-PRE-PROCESS cmd="set" data="rtp_start_port=16384"/>
+  <X-PRE-PROCESS cmd="set" data="rtp_end_port=32768"/>
+
+  <!-- Default caller ID for outbound (SIP trunk) -->
+  <X-PRE-PROCESS cmd="set" data="outbound_caller_id_name=Dialer"/>
+  <X-PRE-PROCESS cmd="set" data="outbound_caller_id_number=0000000000"/>
+
+  <!-- AMD -->
+  <X-PRE-PROCESS cmd="set" data="amd_initial_silence=2500"/>
+  <X-PRE-PROCESS cmd="set" data="amd_greeting=1500"/>
+  <X-PRE-PROCESS cmd="set" data="amd_after_greeting_silence=800"/>
+  <X-PRE-PROCESS cmd="set" data="amd_total_analysis_time=5000"/>
+  <X-PRE-PROCESS cmd="set" data="amd_min_word_length=100"/>
+  <X-PRE-PROCESS cmd="set" data="amd_between_words_silence=50"/>
+  <X-PRE-PROCESS cmd="set" data="amd_maximum_number_of_words=3"/>
+  <X-PRE-PROCESS cmd="set" data="amd_silence_threshold=256"/>
+</include>

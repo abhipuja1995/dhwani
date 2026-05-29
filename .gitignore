@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+env/
+.env
+pip-wheel-metadata/
+
+# SQLite database (local dev data)
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+/tmp/
+
+# FreeSWITCH generated certs
+freeswitch/conf/ssl/
+freeswitch/conf/*.pem
+freeswitch/conf/*.key
+freeswitch/conf/*.crt
+
+# SIP trunk credentials (fill in locally, never commit)
+freeswitch/conf/sip_profiles/external_gateways/trunk.xml
+
+# Alembic
+api/dialer.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# coturn secrets (use env vars in prod)
+# coturn/turnserver.conf  ← kept (has placeholder secret, not real)
+
+# Docker volumes
+postgres_data/
+redis_data/

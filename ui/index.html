@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dhwani — Collections Intelligence</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --brand:#0057D9; --brand-d:#003FA3; --brand-light:#EBF4FF;
+  --dark:#0B1628; --dark2:#0F1F3D; --dark3:#172240;
+  --surface:#fff; --bg:#F1F5F9; --border:#E2E8F0;
+  --text:#0F172A; --text2:#475569; --text3:#94A3B8;
+  --commit:#B45309; --commit-bg:#FFFBEB; --commit-br:#FCD34D;
+  --risk:#DC2626; --risk-bg:#FEF2F2; --risk-br:#FCA5A5;
+  --pos:#059669; --pos-bg:#F0FDF4; --pos-br:#86EFAC;
+  --info:#1D4ED8; --info-bg:#EFF6FF; --info-br:#93C5FD;
+  --hard:#7C3AED; --hard-bg:#F5F3FF; --hard-br:#C4B5FD;
+}
+
+body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;font-size:13px;line-height:1.4}
+
+.app{display:flex;flex-direction:column;height:100vh}
+
+/* ── HEADER ── */
+.header{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:18px;flex-shrink:0;z-index:20}
+.logo{font-size:19px;font-weight:800;color:var(--brand);letter-spacing:-0.5px;flex-shrink:0}
+.logo span{color:var(--text3);font-weight:400;font-size:11px;letter-spacing:0;margin-left:4px}
+.h-stats{display:flex;gap:16px;flex:1}
+.h-stat{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)}
+.h-stat b{color:var(--text);font-weight:700}
+.h-stat.hi b{color:var(--brand)}
+.h-stat.ptp b{color:var(--pos)}
+.sep{width:1px;height:18px;background:var(--border)}
+.compliance-pill{display:flex;align-items:center;gap:5px;padding:4px 10px;background:var(--pos-bg);border:1px solid var(--pos-br);border-radius:20px;font-size:11px;font-weight:700;color:var(--pos)}
+.agent-area{display:flex;align-items:center;gap:8px}
+.avatar{width:28px;height:28px;background:var(--brand);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0}
+.agent-name{font-size:12px;font-weight:600}
+.status-sel{padding:3px 10px;border-radius:20px;background:var(--pos-bg);color:var(--pos);border:1px solid var(--pos-br);font-size:10px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:0.3px}
+
+/* ── MAIN LAYOUT ── */
+.main{display:flex;flex:1;overflow:hidden}
+
+/* ── SIDEBAR ── */
+.sidebar{width:236px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sb-head{padding:12px 14px 10px;border-bottom:1px solid var(--border);flex-shrink:0}
+.sb-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:9px;display:flex;align-items:center;justify-content:space-between}
+.sb-title span{color:var(--text3);font-weight:500}
+.filter-row{display:flex;gap:4px}
+.flt{padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:transparent;font-size:10px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .15s}
+.flt.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.q-list{flex:1;overflow-y:auto;padding:8px}
+.q-item{padding:9px 11px;border-radius:8px;border:1.5px solid transparent;cursor:pointer;margin-bottom:4px;transition:all .15s;position:relative}
+.q-item:hover{background:var(--bg)}
+.q-item.sel{background:var(--brand-light);border-color:var(--brand)}
+.q-row1{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
+.q-name{font-weight:700;font-size:12px}
+.q-priority{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.q-sub{font-size:11px;color:var(--text2);display:flex;align-items:center;justify-content:space-between}
+.q-amount{font-weight:700}
+.q-days{font-size:10px;color:var(--text3)}
+.q-score-bar{height:2px;border-radius:1px;margin-top:5px;background:var(--border)}
+.q-score-fill{height:100%;border-radius:1px;transition:width .3s}
+
+/* ── CENTER ── */
+.center{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* profile strip */
+.p-strip{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;gap:20px;flex-shrink:0;min-height:68px}
+.p-main{flex:1;min-width:0}
+.p-name-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.p-name{font-size:17px;font-weight:800;color:var(--text)}
+.p-phone{font-size:12px;color:var(--text2);font-family:monospace;letter-spacing:.3px}
+.p-badges{display:flex;gap:5px;flex-wrap:wrap}
+.bdg{padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.bdg-ov{background:var(--risk-bg);color:var(--risk)}
+.bdg-cur{background:var(--commit-bg);color:var(--commit)}
+.bdg-paid{background:var(--pos-bg);color:var(--pos)}
+.p-amounts{display:flex;gap:20px;flex-shrink:0}
+.amt{text-align:center}
+.amt-lbl{font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.amt-val{font-size:16px;font-weight:800}
+.amt-val.due{color:var(--risk)}
+.p-actions{display:flex;gap:7px;flex-shrink:0}
+.btn{padding:8px 15px;border-radius:6px;border:none;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
+.btn-pr{background:var(--brand);color:#fff}
+.btn-pr:hover{background:var(--brand-d)}
+.btn-sec{background:var(--bg);color:var(--text2);border:1px solid var(--border)}
+.btn-sec:hover{background:var(--border)}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-dan{background:#EF4444;color:#fff}
+.btn-dan:hover{background:#DC2626}
+
+/* ── PROFILE DETAIL ── */
+.p-detail{flex:1;overflow-y:auto;padding:20px}
+.d-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.d-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px}
+.d-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:12px}
+.l-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.l-item-lbl{font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;margin-bottom:2px}
+.l-item-val{font-size:14px;font-weight:700}
+.h-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #F8FAFC}
+.h-dot-col{display:flex;flex-direction:column;align-items:center;width:14px;padding-top:3px}
+.h-dot{width:8px;height:8px;border-radius:50%;background:var(--brand);border:2px solid var(--surface);box-shadow:0 0 0 1px var(--border);flex-shrink:0}
+.h-line{width:1px;flex:1;background:var(--border);min-height:18px;margin-top:3px}
+.h-body{flex:1;padding-bottom:10px}
+.h-date{font-size:10px;color:var(--text3);font-weight:500}
+.h-act{font-size:12px;font-weight:600;margin:1px 0}
+.h-out{font-size:11px;color:var(--text2)}
+.next-action-box{background:var(--brand-light);border:1px solid var(--info-br);border-radius:8px;padding:12px;margin-top:14px}
+.na-lbl{font-size:10px;font-weight:700;color:var(--brand);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.na-text{font-size:12px;color:var(--brand-d);font-weight:500;line-height:1.5}
+
+/* ── CALL INTERFACE (dark) ── */
+.call-iface{flex:1;background:linear-gradient(160deg,var(--dark) 0%,var(--dark2) 55%,var(--dark) 100%);display:flex;flex-direction:column;overflow:hidden;color:#fff}
+
+.call-topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0}
+.call-info{}
+.call-name-row{display:flex;align-items:center;gap:9px;margin-bottom:3px}
+.call-name{font-size:19px;font-weight:800}
+.live-pill{padding:3px 9px;background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.4);border-radius:12px;font-size:9px;font-weight:800;color:#FCA5A5;letter-spacing:.5px;animation:livePulse 2s ease-in-out infinite}
+@keyframes livePulse{0%,100%{opacity:1}50%{opacity:.6}}
+.call-phone{font-family:monospace;font-size:13px;color:rgba(255,255,255,.5);letter-spacing:.5px}
+.call-controls{display:flex;gap:7px;align-items:center}
+.ctrl{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 12px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:rgba(255,255,255,.65);cursor:pointer;transition:all .15s;min-width:52px}
+.ctrl:hover{background:rgba(255,255,255,.12);color:#fff}
+.ctrl.on-mute{background:rgba(239,68,68,.2);border-color:rgba(239,68,68,.4);color:#FCA5A5}
+.ctrl.on-hold{background:rgba(245,158,11,.2);border-color:rgba(245,158,11,.4);color:#FCD34D}
+.ctrl-ic{font-size:16px}
+.ctrl-lb{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.end-btn{padding:10px 20px;background:#DC2626;border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;margin-left:4px}
+.end-btn:hover{background:#B91C1C}
+
+/* stats bar */
+.call-stats{display:flex;align-items:center;gap:0;padding:0 20px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0}
+.cs-item{padding:10px 16px;border-right:1px solid rgba(255,255,255,.06)}
+.cs-item:first-child{padding-left:0}
+.cs-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.35);font-weight:600;margin-bottom:2px}
+.cs-val{font-size:13px;font-weight:800;color:rgba(255,255,255,.9)}
+.cs-val.timer{font-size:22px;letter-spacing:1px;font-variant-numeric:tabular-nums}
+.sentiment-track{height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;width:100px;margin-top:4px}
+.sentiment-fill{height:100%;border-radius:3px;transition:width 1.2s ease,background-color 1.2s ease}
+.talk-track{display:flex;height:5px;border-radius:3px;overflow:hidden;width:100px;margin-top:4px}
+.ta{background:#3B82F6;transition:flex .5s}
+.tc{background:rgba(255,255,255,.25);transition:flex .5s}
+
+/* waveform */
+.waveform-row{padding:10px 20px 6px;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.wv-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.3);font-weight:600;white-space:nowrap}
+.waveform{display:flex;align-items:center;gap:2.5px;height:30px;flex:1}
+.wb{width:3px;border-radius:2px;background:var(--brand);animation:wv var(--d,.6s) ease-in-out infinite alternate;animation-delay:var(--dl,0s)}
+@keyframes wv{from{height:var(--mn,4px);opacity:.4}to{height:var(--mx,22px);opacity:1}}
+.speaking-label{font-size:10px;color:rgba(255,255,255,.4);font-style:italic;white-space:nowrap}
+
+/* transcript */
+.transcript-wrap{flex:1;overflow-y:auto;padding:14px 20px}
+.tr-header{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.3);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.tr-dot{width:6px;height:6px;border-radius:50%;background:var(--brand);animation:livePulse 1.5s infinite}
+.tr-line{display:flex;gap:9px;margin-bottom:10px;align-items:flex-start;animation:trSlide .28s ease-out}
+@keyframes trSlide{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.tr-av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0;margin-top:1px}
+.tr-av.ag{background:var(--brand);color:#fff}
+.tr-av.cu{background:rgba(255,255,255,.12);color:rgba(255,255,255,.7)}
+.tr-body{flex:1}
+.tr-meta{display:flex;align-items:center;gap:6px;margin-bottom:2px}
+.tr-who{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.tr-who.ag{color:rgba(96,165,250,.9)}
+.tr-who.cu{color:rgba(255,255,255,.45)}
+.tr-ts{font-size:9px;color:rgba(255,255,255,.25)}
+.tr-text{font-size:13px;line-height:1.5;color:rgba(255,255,255,.85)}
+.tr-flags{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.tf{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;animation:flagPop .35s cubic-bezier(.34,1.56,.64,1)}
+@keyframes flagPop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.tf.commit{background:rgba(245,158,11,.2);color:#FCD34D;border:1px solid rgba(245,158,11,.35)}
+.tf.pos{background:rgba(16,185,129,.2);color:#6EE7B7;border:1px solid rgba(16,185,129,.3)}
+.tf.hard{background:rgba(124,58,237,.2);color:#C4B5FD;border:1px solid rgba(124,58,237,.3)}
+.tf.comp{background:rgba(239,68,68,.2);color:#FCA5A5;border:1px solid rgba(239,68,68,.3)}
+.tf.info{background:rgba(59,130,246,.2);color:#93C5FD;border:1px solid rgba(59,130,246,.3)}
+
+/* disposition bar */
+.disp-bar{padding:10px 20px;border-top:1px solid rgba(255,255,255,.07);display:flex;gap:8px;align-items:center;flex-shrink:0;background:rgba(0,0,0,.25)}
+.disp-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:rgba(255,255,255,.35);flex-shrink:0}
+.disp-btns{display:flex;gap:5px;flex-wrap:wrap}
+.db{padding:5px 9px;border-radius:4px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:rgba(255,255,255,.55);font-size:10px;font-weight:600;cursor:pointer;transition:all .15s;text-transform:uppercase}
+.db:hover{background:rgba(255,255,255,.1);color:#fff}
+.db.sel{background:rgba(245,158,11,.2);border-color:rgba(245,158,11,.5);color:#FCD34D}
+.notes-in{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:5px;color:#fff;font-size:11px;padding:6px 10px;outline:none;font-family:inherit}
+.notes-in::placeholder{color:rgba(255,255,255,.2)}
+.capture-btn{padding:6px 14px;background:rgba(245,158,11,.8);border:none;border-radius:5px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap}
+.capture-btn:hover{background:#B45309}
+
+/* ── RIGHT PANEL ── */
+.right-panel{width:288px;flex-shrink:0;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.r-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
+.r-tab{flex:1;padding:10px 6px;text-align:center;font-size:11px;font-weight:600;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
+.r-tab.on{color:var(--brand);border-bottom-color:var(--brand)}
+.r-body{flex:1;overflow-y:auto;padding:12px}
+
+/* flag cards */
+.fc{padding:10px;border-radius:8px;border-left:3px solid;margin-bottom:8px;animation:fcIn .35s cubic-bezier(.34,1.56,.64,1)}
+@keyframes fcIn{from{opacity:0;transform:translateX(16px) scale(.95)}to{opacity:1;transform:translateX(0) scale(1)}}
+.fc.commit{background:var(--commit-bg);border-color:#F59E0B}
+.fc.pos{background:var(--pos-bg);border-color:#10B981}
+.fc.hard{background:var(--hard-bg);border-color:#7C3AED}
+.fc.comp{background:var(--risk-bg);border-color:#DC2626}
+.fc.info{background:var(--info-bg);border-color:#3B82F6}
+.fc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}
+.fc-type{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+.fc-type.commit{color:var(--commit)} .fc-type.pos{color:var(--pos)} .fc-type.hard{color:var(--hard)}
+.fc-type.comp{color:var(--risk)} .fc-type.info{color:var(--info)}
+.fc-ts{font-size:9px;color:var(--text3)}
+.fc-desc{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;line-height:1.4}
+.fc-quote{font-size:10px;color:var(--text2);font-style:italic;line-height:1.4;margin-bottom:4px;border-left:2px solid var(--border);padding-left:6px}
+.fc-action{font-size:10px;color:var(--text3);display:flex;align-items:center;gap:3px}
+
+/* ptp capture panel */
+.ptp-panel{background:var(--commit-bg);border:1.5px solid var(--commit-br);border-radius:10px;padding:12px;margin-bottom:10px;animation:fcIn .4s ease-out}
+.ptp-t{font-size:11px;font-weight:800;color:var(--commit);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.ptp-row{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.ptp-row label{font-size:10px;font-weight:600;color:#78350F;width:45px;flex-shrink:0}
+.ptp-in{flex:1;padding:5px 8px;border:1px solid var(--commit-br);border-radius:4px;font-size:11px;background:#fff;color:var(--text);outline:none;font-family:inherit}
+.ptp-in:focus{border-color:var(--commit)}
+.ptp-save{width:100%;padding:7px;background:#B45309;color:#fff;border:none;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;margin-top:2px;transition:background .15s}
+.ptp-save:hover{background:#92400E}
+
+/* coaching */
+.cc{padding:10px;border-radius:8px;margin-bottom:7px;border:1px solid var(--border)}
+.cc.tip{background:var(--info-bg);border-color:var(--info-br)}
+.cc.warn{background:var(--commit-bg);border-color:var(--commit-br)}
+.cc.ok{background:var(--pos-bg);border-color:var(--pos-br)}
+.cc-head{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;color:var(--text2)}
+.cc-text{font-size:11px;line-height:1.5;color:var(--text)}
+.cc.tip .cc-head{color:var(--info)} .cc.warn .cc-head{color:var(--commit)} .cc.ok .cc-head{color:var(--pos)}
+
+/* send templates */
+.ch-tabs{display:flex;gap:4px;margin-bottom:10px}
+.ch-btn{flex:1;padding:6px;font-size:10px;font-weight:700;border:1px solid var(--border);background:transparent;border-radius:5px;cursor:pointer;text-transform:uppercase;color:var(--text2);transition:all .15s}
+.ch-btn.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.tpl-card{padding:9px;background:var(--bg);border:1px solid var(--border);border-radius:7px;margin-bottom:7px;transition:border-color .15s}
+.tpl-card:hover{border-color:var(--brand)}
+.tpl-txt{font-size:11px;color:var(--text2);line-height:1.4;margin-bottom:7px}
+.tpl-acts{display:flex;gap:5px}
+.snd{padding:4px 10px;border-radius:3px;border:none;font-size:10px;font-weight:700;cursor:pointer;text-transform:uppercase;transition:opacity .15s}
+.snd:hover{opacity:.85}
+.snd-wa{background:#25D366;color:#fff} .snd-sms{background:#1D4ED8;color:#fff} .snd-em{background:#EA580C;color:#fff}
+
+/* empty state */
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--text3);padding:40px}
+.empty-ic{font-size:40px;opacity:.3}
+.empty-txt{font-size:13px;text-align:center;line-height:1.5}
+
+/* toast */
+.toast{position:fixed;bottom:22px;right:22px;padding:11px 16px;background:#1E293B;color:#fff;border-radius:8px;font-size:12px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,.25);z-index:200;display:flex;align-items:center;gap:8px;animation:toastIn .3s ease-out}
+@keyframes toastIn{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+::-webkit-scrollbar-thumb:hover{background:var(--text3)}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ── HEADER ── -->
+<header class="header">
+  <div class="logo">Dhwani <span>Collections Intelligence</span></div>
+  <div class="h-stats">
+    <div class="h-stat">Today <b id="hCalls">12</b> calls</div>
+    <div class="sep"></div>
+    <div class="h-stat">Avg Handle <b id="hAvg">4:32</b></div>
+    <div class="sep"></div>
+    <div class="h-stat hi">Connect Rate <b>76%</b></div>
+    <div class="sep"></div>
+    <div class="h-stat ptp">PTP Secured <b id="hPtp">4</b> today</div>
+  </div>
+  <div class="compliance-pill" id="compPill">✓ Compliance 98%</div>
+  <div class="agent-area">
+    <div class="avatar">PS</div>
+    <div>
+      <div class="agent-name">Priya Sharma</div>
+    </div>
+    <select class="status-sel" id="agentStatus">
+      <option>Available</option>
+      <option>Wrap-up</option>
+      <option>Break</option>
+      <option>Offline</option>
+    </select>
+  </div>
+</header>
+
+<!-- ── MAIN ── -->
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-head">
+      <div class="sb-title">Call Queue <span id="qCount">(8)</span></div>
+      <div class="filter-row">
+        <button class="flt on" onclick="setFilter('all',this)">All</button>
+        <button class="flt" onclick="setFilter('overdue',this)">Overdue</button>
+        <button class="flt" onclick="setFilter('today',this)">Today</button>
+        <button class="flt" onclick="setFilter('high',this)">High ₹</button>
+      </div>
+    </div>
+    <div class="q-list" id="qList"></div>
+  </aside>
+
+  <!-- CENTER -->
+  <div class="center" id="center">
+
+    <!-- Profile strip (always visible) -->
+    <div class="p-strip" id="pStrip">
+      <div class="empty" style="flex:1;flex-direction:row;padding:0;gap:8px;justify-content:flex-start">
+        <span class="empty-ic" style="font-size:20px;opacity:.4">←</span>
+        <span class="empty-txt" style="font-size:12px">Select a borrower from the queue</span>
+      </div>
+    </div>
+
+    <!-- Call area -->
+    <div style="flex:1;overflow:hidden;display:flex;flex-direction:column" id="callArea">
+      <div class="empty">
+        <div class="empty-ic">📋</div>
+        <div class="empty-txt">Select a borrower to view profile<br>and start the call</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <aside class="right-panel">
+    <div class="r-tabs">
+      <div class="r-tab on" data-tab="flags" onclick="switchTab('flags',this)">🚩 Flags</div>
+      <div class="r-tab" data-tab="coaching" onclick="switchTab('coaching',this)">💡 Coaching</div>
+      <div class="r-tab" data-tab="send" onclick="switchTab('send',this)">📤 Send</div>
+    </div>
+    <div class="r-body" id="rBody">
+      <div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">
+        Select a borrower to see AI recommendations
+      </div>
+    </div>
+  </aside>
+
+</div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+
+const borrowers = [
+  { id:1, name:'Rajesh Kumar',  phone:'+91 98765 43210', loan:'₹50,000', due:'₹12,500', dueDate:'May 15, 2024', status:'overdue', dpd:30, score:92,
+    history:[
+      {date:'Apr 10',act:'Call Attempted',out:'No Answer'},
+      {date:'Apr 08',act:'WhatsApp Sent',out:'Delivered'},
+      {date:'Mar 28',act:'Call Connected',out:'Promise to pay 50%'},
+    ],
+    next:'Follow-up: negotiate 2-installment plan. Last contact: 10 days ago.',
+  },
+  { id:2, name:'Priya Singh',   phone:'+91 87654 32109', loan:'₹75,000', due:'₹8,200',  dueDate:'May 20, 2024', status:'current', dpd:5,  score:68,
+    history:[{date:'Apr 15',act:'Call Connected',out:'Payment promised by 18th'}],
+    next:'Friendly reminder call. Customer previously cooperative.',
+  },
+  { id:3, name:'Deepak Singh',  phone:'+91 65432 10987', loan:'₹45,000', due:'₹6,500',  dueDate:'May 22, 2024', status:'current', dpd:3,  score:55,
+    history:[{date:'Apr 12',act:'SMS Sent',out:'Delivered'}],
+    next:'First call contact — review account before dialing.',
+  },
+  { id:4, name:'Amit Patel',    phone:'+91 76543 21098', loan:'₹30,000', due:'₹0',       dueDate:'May 10, 2024', status:'paid',    dpd:0,  score:20,
+    history:[{date:'Apr 20',act:'Payment Received',out:'Full Amount'}],
+    next:'Cross-sell opportunity — pre-approved top-up offer available.',
+  },
+  { id:5, name:'Sunita Rao',    phone:'+91 94321 09876', loan:'₹28,000', due:'₹14,000', dueDate:'Apr 30, 2024', status:'overdue', dpd:45, score:97,
+    history:[
+      {date:'Apr 20',act:'Call Attempted',out:'No Answer'},
+      {date:'Apr 18',act:'Call Attempted',out:'No Answer'},
+      {date:'Apr 05',act:'Call Connected',out:'Disputed amount'},
+    ],
+    next:'URGENT: 45 DPD. Escalation candidate. Verify dispute status first.',
+  },
+  { id:6, name:'Mohan Iyer',    phone:'+91 80012 34567', loan:'₹60,000', due:'₹9,800',  dueDate:'May 18, 2024', status:'current', dpd:8,  score:72,
+    history:[{date:'Apr 14',act:'Email Sent',out:'Opened'}],
+    next:'Second contact attempt — offer payment plan proactively.',
+  },
+];
+
+const templates = {
+  whatsapp:[
+    'Hi {name}, this is a reminder that ₹{due} was due on {date}. Can you update on payment status?',
+    'We understand finances can be tight. Would a flexible payment plan help? Let\'s work something out.',
+    'As discussed, your plan is ₹5K by Friday. Here\'s your payment link: pay.lendify.in/rk4821',
+    'Just following up — did you receive the payment link? Reply to confirm or call us anytime.',
+  ],
+  sms:[
+    'LENDIFY: ₹{due} due {date}. Pay now at pay.lendify.in or call 1800-XXX-XXXX.',
+    'LENDIFY: Overdue notice — ₹{due}. Reply YES for payment plan. No extra charges.',
+    'LENDIFY: Plan confirmed ₹5K Fri + ₹7.5K May31. Link: pay.lendify.in/rk4821',
+  ],
+  email:[
+    'Subject: Payment Due Notice — Action Required | Outstanding ₹{due} since {date}.',
+    'Subject: Flexible Settlement Offer | Customised payment plan available for your account.',
+    'Subject: Confirming Your Payment Plan | ₹5,000 by May 24 + ₹7,500 by May 31.',
+  ],
+};
+
+// ── SIMULATION SCRIPT ─────────────────────────────────────────────────────────
+
+const SCRIPT = [
+  { t:1.2,  spk:'agent',    text:'Hello, may I speak with Rajesh Kumar?' },
+  { t:3.8,  spk:'customer', text:'Yes, this is Rajesh. Who\'s calling?' },
+  { t:6.5,  spk:'agent',    text:'Good afternoon Rajesh, this is Priya from Lendify Finance. I\'m calling about your loan account ending in 4821.',
+    flag:{ type:'pos', title:'CONTACT VERIFIED', desc:'Identity confirmed on call', action:'Proceed — confirm account details' } },
+  { t:12,   spk:'customer', text:'I know why you\'re calling.' },
+  { t:14.5, spk:'agent',    text:'Rajesh, your outstanding amount of ₹12,500 was due on May 15th. How can we resolve this today?' },
+  { t:19,   spk:'customer', text:'Look, I\'ve been having some financial difficulties. My business has been slow lately.',
+    flag:{ type:'hard', title:'HARDSHIP DISCLOSED', desc:'"financial difficulties · business slow"', action:'Acknowledge empathetically — offer payment plan' } },
+  { t:24,   spk:'agent',    text:'I completely understand Rajesh, and I appreciate you sharing that. Many of our customers face similar situations — let me see what options we can work out.' },
+  { t:30,   spk:'customer', text:'Can we split this into two payments? I really can\'t pay everything at once.',
+    flag:{ type:'commit', title:'PTP INTENT DETECTED', desc:'Customer requested instalment plan', action:'Present 2 clear options — secure dates and amounts' } },
+  { t:35,   spk:'agent',    text:'Absolutely, we can arrange that. What amount can you commit to paying by this Friday?' },
+  { t:40,   spk:'customer', text:'I can manage ₹5,000 by this Friday. And then the remaining ₹7,500 by end of May.',
+    flag:{ type:'commit', title:'COMMITMENT CAPTURED 🎯', desc:'₹5,000 by May 24  ·  ₹7,500 by May 31', action:'Confirm verbally → send payment link → log PTP', isPtp:true } },
+  { t:46,   spk:'agent',    text:'Perfect. So to confirm: ₹5,000 by Friday May 24th, and ₹7,500 by May 31st. I\'ll send you a WhatsApp payment link right now.' },
+  { t:51,   spk:'customer', text:'Yes that works. Please send the link.',
+    flag:{ type:'pos', title:'PTP CONFIRMED', desc:'Customer verbally agreed to both instalments', action:'Send WA link → update CRM → log disposition' } },
+  { t:54,   spk:'agent',    text:'Done! Link sent. Is there anything else I can help with?' },
+  { t:57,   spk:'customer', text:'No, that\'s all. Thank you for being understanding.' },
+];
+
+const SENTIMENT = [
+  {t:0,  v:50, lbl:'Neutral',       col:'#64748B'},
+  {t:19, v:30, lbl:'Concerned',     col:'#F59E0B'},
+  {t:24, v:45, lbl:'Neutral',       col:'#64748B'},
+  {t:30, v:55, lbl:'Cooperative',   col:'#3B82F6'},
+  {t:40, v:80, lbl:'Positive',      col:'#10B981'},
+  {t:51, v:92, lbl:'Very Positive', col:'#059669'},
+];
+
+const COACHING_PRE = [
+  {type:'tip', head:'Before calling', text:'Rajesh has 30 DPD. Last contact 10 days ago. He previously promised 50% — hold him to that history.'},
+  {type:'warn',head:'Compliance reminder', text:'Do not threaten legal action. Calling hours: 9am–9pm only. Must state company name within 30 seconds.'},
+  {type:'ok', head:'Best approach', text:'Empathetic but firm. Offer 2-instalment plan if needed. Aim to secure specific date + amount commitment.'},
+];
+
+const COACHING_LIVE = [
+  {t:6,  type:'tip', head:'Identity verified ✓', text:'Proceed to account discussion. Mention overdue amount clearly.'},
+  {t:19, type:'warn',head:'Hardship mentioned', text:'Acknowledge empathetically. Say "I understand" before presenting options. Do not rush.'},
+  {t:30, type:'tip', head:'PTP intent — act now', text:'Present two clear options with specific dates. "Would May 24 + May 31 work for you?"'},
+  {t:40, type:'ok', head:'Commitment secured! 🎉', text:'Confirm both dates verbally. Send WA payment link before ending call. Log as PTP-2.'},
+  {t:51, type:'ok', head:'Ready to close', text:'Confirm plan one more time, send link, and wrap up professionally. Great call!'},
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+
+let selected = null;
+let callActive = false;
+let elapsed = 0;
+let callInterval = null;
+let simTimeout = null;
+let simTimeouts = [];
+let rightTab = 'flags';
+let msgChannel = 'whatsapp';
+let dispSelected = null;
+let transcriptLines = [];
+let flags = [];
+let currentCoaching = COACHING_PRE;
+let ptpData = {amt1:'₹5,000',date1:'May 24',amt2:'₹7,500',date2:'May 31'};
+let ptpCaptured = false;
+let talkRatio = {a:50,c:50};
+let sentimentVal = {v:50,lbl:'Neutral',col:'#64748B'};
+let compScore = 98;
+let muted = false;
+let onHold = false;
+
+// ── UTILITIES ─────────────────────────────────────────────────────────────────
+
+function fmt(s){return`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function toast(msg,ic='✓'){
+  const el=document.createElement('div');
+  el.className='toast';el.innerHTML=`<span>${ic}</span>${msg}`;
+  document.body.appendChild(el);
+  setTimeout(()=>{el.style.opacity='0';el.style.transform='translateY(8px)';setTimeout(()=>el.remove(),300)},3000);
+}
+
+// ── RENDER QUEUE ──────────────────────────────────────────────────────────────
+
+let qFilter='all';
+function setFilter(f,el){
+  qFilter=f;
+  document.querySelectorAll('.flt').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  renderQueue();
+}
+
+function renderQueue(){
+  const list=document.getElementById('qList');
+  let items=borrowers;
+  if(qFilter==='overdue') items=items.filter(b=>b.status==='overdue');
+  if(qFilter==='high')    items=[...items].sort((a,b)=>b.score-a.score);
+  if(qFilter==='today')   items=items.filter(b=>b.dpd<=10);
+
+  const priorityColor={overdue:'#DC2626',current:'#F59E0B',paid:'#10B981'};
+  list.innerHTML=items.map(b=>`
+    <div class="q-item${selected&&selected.id===b.id?' sel':''}" onclick="selectBorrower(${b.id})">
+      <div class="q-row1">
+        <span class="q-name">${b.name}</span>
+        <span class="q-priority" style="background:${priorityColor[b.status]||'#94A3B8'}"></span>
+      </div>
+      <div class="q-sub">
+        <span class="q-amount" style="color:${b.status==='paid'?'#10B981':b.status==='overdue'?'#DC2626':'#B45309'}">${b.due==='₹0'?'PAID':b.due}</span>
+        <span class="q-days">${b.dpd>0?b.dpd+'d DPD':''}</span>
+      </div>
+      <div class="q-score-bar"><div class="q-score-fill" style="width:${b.score}%;background:${b.score>80?'#DC2626':b.score>60?'#F59E0B':'#10B981'}"></div></div>
+    </div>
+  `).join('');
+  document.getElementById('qCount').textContent=`(${items.length})`;
+}
+
+// ── SELECT BORROWER ───────────────────────────────────────────────────────────
+
+function selectBorrower(id){
+  if(callActive) return;
+  selected=borrowers.find(b=>b.id===id);
+  renderQueue();
+  renderProfileStrip();
+  renderProfileDetail();
+  renderRightPre();
+}
+
+// ── PROFILE STRIP ─────────────────────────────────────────────────────────────
+
+function renderProfileStrip(){
+  if(!selected){
+    document.getElementById('pStrip').innerHTML=`
+      <div class="empty" style="flex:1;flex-direction:row;padding:0;gap:8px;justify-content:flex-start">
+        <span style="font-size:20px;opacity:.4">←</span>
+        <span style="font-size:12px;color:var(--text3)">Select a borrower from the queue</span>
+      </div>`;
+    return;
+  }
+  const b=selected;
+  const bdgCls=b.status==='overdue'?'bdg-ov':b.status==='current'?'bdg-cur':'bdg-paid';
+  const bdgLbl=b.status==='overdue'?`${b.dpd}d OVERDUE`:b.status.toUpperCase();
+
+  document.getElementById('pStrip').innerHTML=`
+    <div class="p-main">
+      <div class="p-name-row">
+        <span class="p-name">${b.name}</span>
+        <span class="bdg ${bdgCls}">${bdgLbl}</span>
+      </div>
+      <div class="p-phone">${b.phone}</div>
+    </div>
+    <div class="p-amounts">
+      <div class="amt"><div class="amt-lbl">Principal</div><div class="amt-val">${b.loan}</div></div>
+      <div class="amt"><div class="amt-lbl">Due Amount</div><div class="amt-val due">${b.due}</div></div>
+      <div class="amt"><div class="amt-lbl">Due Date</div><div class="amt-val" style="font-size:14px">${b.dueDate}</div></div>
+    </div>
+    <div class="p-actions">
+      <button class="btn btn-sec btn-sm" onclick="toast('Copying number…','📋')">📋 Copy</button>
+      <button class="btn btn-pr" onclick="startCall()">☎ Start Call</button>
+    </div>`;
+}
+
+// ── PROFILE DETAIL ────────────────────────────────────────────────────────────
+
+function renderProfileDetail(){
+  const area=document.getElementById('callArea');
+  if(!selected){area.innerHTML=`<div class="empty"><div class="empty-ic">📋</div><div class="empty-txt">Select a borrower to view profile</div></div>`;return;}
+  const b=selected;
+  area.innerHTML=`
+    <div class="p-detail">
+      <div class="d-grid">
+        <div class="d-card">
+          <div class="d-title">Loan Details</div>
+          <div class="l-grid">
+            <div><div class="l-item-lbl">Principal</div><div class="l-item-val">${b.loan}</div></div>
+            <div><div class="l-item-lbl">Outstanding</div><div class="l-item-val" style="color:${b.status==='paid'?'var(--pos)':'var(--risk)'}">${b.due}</div></div>
+            <div><div class="l-item-lbl">Due Date</div><div class="l-item-val">${b.dueDate}</div></div>
+            <div><div class="l-item-lbl">DPD</div><div class="l-item-val" style="color:${b.dpd>30?'var(--risk)':b.dpd>0?'var(--commit)':'var(--pos)'}">${b.dpd>0?b.dpd+' days':'Nil'}</div></div>
+          </div>
+        </div>
+        <div class="d-card">
+          <div class="d-title">Contact Intelligence</div>
+          <div class="l-grid">
+            <div><div class="l-item-lbl">Priority Score</div><div class="l-item-val" style="color:${b.score>80?'var(--risk)':b.score>60?'var(--commit)':'var(--pos)'}">${b.score} / 100</div></div>
+            <div><div class="l-item-lbl">Contacts</div><div class="l-item-val">${b.history.length}</div></div>
+            <div><div class="l-item-lbl">Last Contact</div><div class="l-item-val" style="font-size:12px">${b.history[0]?.date||'—'}</div></div>
+            <div><div class="l-item-lbl">Last Outcome</div><div class="l-item-val" style="font-size:11px">${b.history[0]?.out||'—'}</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="d-card" style="margin-bottom:14px">
+        <div class="d-title">Contact History</div>
+        <div class="history-list">
+          ${b.history.map((h,i)=>`
+            <div class="h-item">
+              <div class="h-dot-col"><div class="h-dot"></div>${i<b.history.length-1?'<div class="h-line"></div>':''}</div>
+              <div class="h-body"><div class="h-date">${h.date}</div><div class="h-act">${h.act}</div><div class="h-out">${h.out}</div></div>
+            </div>`).join('')}
+        </div>
+      </div>
+      <div class="next-action-box">
+        <div class="na-lbl">💡 Suggested Action</div>
+        <div class="na-text">${b.next}</div>
+      </div>
+    </div>`;
+}
+
+// ── RIGHT PANEL (PRE-CALL) ────────────────────────────────────────────────────
+
+function renderRightPre(){
+  flags=[];ptpCaptured=false;
+  currentCoaching=COACHING_PRE;
+  switchTab(rightTab,document.querySelector(`.r-tab[data-tab="${rightTab}"]`));
+}
+
+function switchTab(tab,el){
+  rightTab=tab;
+  document.querySelectorAll('.r-tab').forEach(t=>t.classList.remove('on'));
+  if(el) el.classList.add('on');
+  renderRightContent();
+}
+
+function renderRightContent(){
+  const body=document.getElementById('rBody');
+  if(rightTab==='flags')    renderFlagsPanel(body);
+  else if(rightTab==='coaching') renderCoachingPanel(body);
+  else renderSendPanel(body);
+}
+
+function renderFlagsPanel(body){
+  if(!selected){body.innerHTML=`<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">Select a borrower</div>`;return;}
+  if(flags.length===0){
+    body.innerHTML=`<div style="padding:30px 10px;text-align:center;color:var(--text3);font-size:12px">
+      ${callActive?'<div style="margin-bottom:8px">🎙 Listening…</div><div>Flags will appear here in real-time as conversation progresses</div>':'<div>Start call to see live AI flags</div>'}
+    </div>`;
+    if(callActive&&ptpCaptured) appendPTPCapture(body);
+    return;
+  }
+  body.innerHTML='';
+  if(ptpCaptured) appendPTPCapture(body);
+  flags.slice().reverse().forEach(f=>{
+    const el=document.createElement('div');
+    el.className=`fc ${f.type}`;
+    el.innerHTML=`
+      <div class="fc-head"><span class="fc-type ${f.type}">${f.title}</span><span class="fc-ts">${f.ts}</span></div>
+      <div class="fc-desc">${f.desc}</div>
+      ${f.quote?`<div class="fc-quote">"${f.quote}"</div>`:''}
+      <div class="fc-action">→ ${f.action}</div>`;
+    body.appendChild(el);
+  });
+}
+
+function appendPTPCapture(body){
+  const el=document.createElement('div');
+  el.className='ptp-panel';
+  el.innerHTML=`
+    <div class="ptp-t">🎯 PTP Captured — Confirm Details</div>
+    <div class="ptp-row"><label>Inst. 1</label><input class="ptp-in" id="ptpA1" value="${ptpData.amt1}"></div>
+    <div class="ptp-row"><label>By</label><input class="ptp-in" id="ptpD1" value="${ptpData.date1}"></div>
+    <div class="ptp-row"><label>Inst. 2</label><input class="ptp-in" id="ptpA2" value="${ptpData.amt2}"></div>
+    <div class="ptp-row"><label>By</label><input class="ptp-in" id="ptpD2" value="${ptpData.date2}"></div>
+    <button class="ptp-save" onclick="savePTP()">✓ Save PTP &amp; Log</button>`;
+  body.insertBefore(el, body.firstChild);
+}
+
+function savePTP(){
+  const a1=document.getElementById('ptpA1')?.value;
+  const d1=document.getElementById('ptpD1')?.value;
+  document.getElementById('hPtp').textContent=parseInt(document.getElementById('hPtp').textContent)+1;
+  toast(`PTP logged: ${a1} by ${d1} + more`,'🎯');
+  sendMsg(2,'whatsapp');
+}
+
+function renderCoachingPanel(body){
+  if(!selected){body.innerHTML=`<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">Select a borrower</div>`;return;}
+  body.innerHTML='';
+  currentCoaching.forEach(c=>{
+    const el=document.createElement('div');
+    el.className=`cc ${c.type}`;
+    el.innerHTML=`<div class="cc-head">${c.head}</div><div class="cc-text">${c.text}</div>`;
+    body.appendChild(el);
+  });
+}
+
+function renderSendPanel(body){
+  if(!selected){body.innerHTML=`<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">Select a borrower</div>`;return;}
+  body.innerHTML=`
+    <div class="ch-tabs">
+      <button class="ch-btn${msgChannel==='whatsapp'?' on':''}" onclick="setMsgCh('whatsapp',this)">WhatsApp</button>
+      <button class="ch-btn${msgChannel==='sms'?' on':''}" onclick="setMsgCh('sms',this)">SMS</button>
+      <button class="ch-btn${msgChannel==='email'?' on':''}" onclick="setMsgCh('email',this)">Email</button>
+    </div>
+    <div id="tplList"></div>`;
+  renderTemplates();
+}
+
+function setMsgCh(ch,el){
+  msgChannel=ch;
+  document.querySelectorAll('.ch-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  renderTemplates();
+}
+
+function renderTemplates(){
+  const list=document.getElementById('tplList');
+  if(!list)return;
+  const ch=msgChannel;
+  const btnCls=ch==='whatsapp'?'snd-wa':ch==='sms'?'snd-sms':'snd-em';
+  const btnLbl=ch==='whatsapp'?'WA':ch==='sms'?'SMS':'Email';
+  list.innerHTML=templates[ch].map((t,i)=>`
+    <div class="tpl-card">
+      <div class="tpl-txt">${t.replace(/{name}/g,selected?.name.split(' ')[0]||'').replace(/{due}/g,selected?.due||'').replace(/{date}/g,selected?.dueDate||'').substring(0,90)}…</div>
+      <div class="tpl-acts">
+        <button class="snd ${btnCls}" onclick="sendMsg(${i},'${ch}')">${btnLbl}</button>
+      </div>
+    </div>`).join('');
+}
+
+function sendMsg(i,ch){
+  if(!selected) return;
+  const names={whatsapp:'WhatsApp',sms:'SMS',email:'Email'};
+  toast(`${names[ch]} sent to ${selected.name}`,'📤');
+}
+
+// ── START CALL ────────────────────────────────────────────────────────────────
+
+function startCall(){
+  if(!selected||callActive) return;
+  callActive=true;
+  elapsed=0;muted=false;onHold=false;
+  transcriptLines=[];flags=[];ptpCaptured=false;
+  sentimentVal={v:50,lbl:'Neutral',col:'#64748B'};
+  talkRatio={a:50,c:50};
+  currentCoaching=COACHING_PRE;
+  dispSelected=null;
+
+  renderCallInterface();
+  callInterval=setInterval(()=>{
+    elapsed++;
+    // update timer
+    const el=document.getElementById('csTimer');
+    if(el) el.textContent=fmt(elapsed);
+    // update sentiment
+    const sv=SENTIMENT.slice().reverse().find(s=>s.t<=elapsed);
+    if(sv&&(sv.v!==sentimentVal.v||sv.lbl!==sentimentVal.lbl)){
+      sentimentVal=sv;
+      updateCallStats();
+    }
+    // update talk ratio (simulate)
+    if(elapsed%5===0){
+      const lastTr=transcriptLines[transcriptLines.length-1];
+      if(lastTr&&lastTr.spk==='customer'){talkRatio.a=Math.max(30,talkRatio.a-2);talkRatio.c=100-talkRatio.a;}
+      else{talkRatio.a=Math.min(70,talkRatio.a+1);talkRatio.c=100-talkRatio.a;}
+      updateCallStats();
+    }
+  },1000);
+
+  // schedule transcript lines + flags
+  SCRIPT.forEach((line,idx)=>{
+    const t=setTimeout(()=>{
+      addTranscriptLine(line.spk, line.text, line.flag);
+      // update coaching
+      const cv=COACHING_LIVE.slice().reverse().find(c=>c.t<=elapsed);
+      if(cv){
+        currentCoaching=[cv,...COACHING_PRE.slice(0,1)];
+        if(rightTab==='coaching') renderRightContent();
+      }
+    }, line.t*1000);
+    simTimeouts.push(t);
+  });
+}
+
+function renderCallInterface(){
+  const strip=document.getElementById('pStrip');
+  if(selected){
+    const b=selected;
+    strip.innerHTML=`
+      <div class="p-main">
+        <div class="p-name-row"><span class="p-name">${b.name}</span></div>
+        <div class="p-phone">${b.phone}</div>
+      </div>
+      <div class="p-amounts">
+        <div class="amt"><div class="amt-lbl">Due</div><div class="amt-val due">${b.due}</div></div>
+        <div class="amt"><div class="amt-lbl">DPD</div><div class="amt-val">${b.dpd}d</div></div>
+      </div>`;
+  }
+
+  const area=document.getElementById('callArea');
+  area.innerHTML=`
+    <div class="call-iface">
+      <!-- topbar -->
+      <div class="call-topbar">
+        <div class="call-info">
+          <div class="call-name-row">
+            <span class="call-name">${selected?.name||''}</span>
+            <span class="live-pill">● LIVE</span>
+          </div>
+          <div class="call-phone">${selected?.phone||''}</div>
+        </div>
+        <div class="call-controls">
+          <div class="ctrl" id="ctrlMute" onclick="toggleMute()">
+            <span class="ctrl-ic">🎙</span><span class="ctrl-lb">Mute</span>
+          </div>
+          <div class="ctrl" id="ctrlHold" onclick="toggleHold()">
+            <span class="ctrl-ic">⏸</span><span class="ctrl-lb">Hold</span>
+          </div>
+          <div class="ctrl" onclick="toast('Transfer in progress…','↗')">
+            <span class="ctrl-ic">↗</span><span class="ctrl-lb">Transfer</span>
+          </div>
+          <div class="ctrl" onclick="toast('Recording active','⏺')">
+            <span class="ctrl-ic">⏺</span><span class="ctrl-lb">Record</span>
+          </div>
+          <button class="end-btn" onclick="endCall()">📵 End Call</button>
+        </div>
+      </div>
+
+      <!-- stats bar -->
+      <div class="call-stats">
+        <div class="cs-item"><div class="cs-lbl">Duration</div><div class="cs-val timer" id="csTimer">0:00</div></div>
+        <div class="cs-item" style="flex:1">
+          <div class="cs-lbl">Sentiment</div>
+          <div class="cs-val" id="csSentLbl" style="color:${sentimentVal.col}">${sentimentVal.lbl}</div>
+          <div class="sentiment-track"><div class="sentiment-fill" id="csSentBar" style="width:${sentimentVal.v}%;background:${sentimentVal.col}"></div></div>
+        </div>
+        <div class="cs-item" style="flex:1">
+          <div class="cs-lbl">Talk Ratio (You / Customer)</div>
+          <div class="cs-val" id="csTalkLbl">${talkRatio.a}% / ${talkRatio.c}%</div>
+          <div class="talk-track"><div class="ta" id="csTa" style="flex:${talkRatio.a}"></div><div class="tc" id="csTc" style="flex:${talkRatio.c}"></div></div>
+        </div>
+        <div class="cs-item">
+          <div class="cs-lbl">Flags</div>
+          <div class="cs-val" id="csFlagCount" style="color:${flags.length>0?'#F59E0B':'rgba(255,255,255,.9)'}">0</div>
+        </div>
+        <div class="cs-item">
+          <div class="cs-lbl">Compliance</div>
+          <div class="cs-val" id="csComp" style="color:#10B981">${compScore}%</div>
+        </div>
+      </div>
+
+      <!-- waveform -->
+      <div class="waveform-row">
+        <span class="wv-lbl">Audio</span>
+        <div class="waveform" id="waveform"></div>
+        <span class="speaking-label" id="speakingLbl"></span>
+      </div>
+
+      <!-- transcript -->
+      <div class="transcript-wrap" id="transcriptWrap">
+        <div class="tr-header"><div class="tr-dot"></div>Live Transcript</div>
+        <div id="trLines"></div>
+      </div>
+
+      <!-- disposition bar -->
+      <div class="disp-bar">
+        <span class="disp-lbl">Outcome</span>
+        <div class="disp-btns">
+          ${['PTP','No Answer','Callback','Refused','Dispute','Wrong No.'].map(d=>`
+            <button class="db${dispSelected===d?' sel':''}" onclick="setDisp('${d}',this)">${d}</button>`).join('')}
+        </div>
+        <input class="notes-in" id="callNotes" placeholder="Notes…" />
+        <button class="capture-btn" onclick="captureAndEnd()">Capture &amp; End</button>
+      </div>
+    </div>`;
+
+  buildWaveform();
+  renderRightContent();
+}
+
+function buildWaveform(){
+  const el=document.getElementById('waveform');
+  if(!el) return;
+  el.innerHTML='';
+  for(let i=0;i<48;i++){
+    const b=document.createElement('div');
+    b.className='wb';
+    const mn=2+Math.random()*4;
+    const mx=8+Math.random()*20;
+    const d=0.3+Math.random()*.6;
+    const dl=Math.random()*.6;
+    b.style.setProperty('--mn',mn+'px');
+    b.style.setProperty('--mx',mx+'px');
+    b.style.setProperty('--d',d+'s');
+    b.style.setProperty('--dl',dl+'s');
+    el.appendChild(b);
+  }
+}
+
+function updateCallStats(){
+  const sl=document.getElementById('csSentLbl');
+  const sb=document.getElementById('csSentBar');
+  const ta=document.getElementById('csTa');
+  const tc=document.getElementById('csTc');
+  const tl=document.getElementById('csTalkLbl');
+  const fc=document.getElementById('csFlagCount');
+  if(sl){sl.textContent=sentimentVal.lbl;sl.style.color=sentimentVal.col;}
+  if(sb){sb.style.width=sentimentVal.v+'%';sb.style.backgroundColor=sentimentVal.col;}
+  if(ta) ta.style.flex=talkRatio.a;
+  if(tc) tc.style.flex=talkRatio.c;
+  if(tl) tl.textContent=`${talkRatio.a}% / ${talkRatio.c}%`;
+  if(fc){fc.textContent=flags.length;fc.style.color=flags.length>0?'#F59E0B':'rgba(255,255,255,.9)';}
+}
+
+// ── TRANSCRIPT ────────────────────────────────────────────────────────────────
+
+function addTranscriptLine(spk, text, flag){
+  const ts=fmt(elapsed);
+  const line={spk,text,ts,flag,words:text.split(' ')};
+  transcriptLines.push(line);
+
+  const container=document.getElementById('trLines');
+  if(!container) return;
+
+  const div=document.createElement('div');
+  div.className='tr-line';
+
+  const isAg=spk==='agent';
+  div.innerHTML=`
+    <div class="tr-av ${isAg?'ag':'cu'}">${isAg?'PS':'C'}</div>
+    <div class="tr-body">
+      <div class="tr-meta">
+        <span class="tr-who ${isAg?'ag':'cu'}">${isAg?'You':'Customer'}</span>
+        <span class="tr-ts">${ts}</span>
+      </div>
+      <div class="tr-text" id="trt-${transcriptLines.length-1}"></div>
+      <div class="tr-flags" id="trf-${transcriptLines.length-1}" style="display:none"></div>
+    </div>`;
+  container.appendChild(div);
+
+  // stream text word by word
+  const textEl=div.querySelector('.tr-text');
+  const idx=transcriptLines.length-1;
+  line.words.forEach((w,i)=>{
+    const wt=setTimeout(()=>{
+      textEl.textContent+=(i>0?' ':'')+w;
+      // auto-scroll
+      const wrap=document.getElementById('transcriptWrap');
+      if(wrap) wrap.scrollTop=wrap.scrollHeight;
+    }, i*65);
+    simTimeouts.push(wt);
+  });
+
+  // speaking label
+  const spkLbl=document.getElementById('speakingLbl');
+  if(spkLbl) spkLbl.textContent=isAg?'You are speaking':'Customer speaking';
+
+  // attach flag after words finish
+  if(flag){
+    const ft=setTimeout(()=>{
+      const flagsEl=document.getElementById(`trf-${idx}`);
+      if(flagsEl){
+        flagsEl.style.display='flex';
+        const fc=document.createElement('span');
+        fc.className=`tf ${flag.type}`;
+        fc.textContent=flag.title;
+        flagsEl.appendChild(fc);
+      }
+      // add to right panel flags
+      flags.push({...flag, ts, quote: text.substring(0,55)+'…'});
+      if(flag.isPtp) ptpCaptured=true;
+      if(rightTab==='flags') renderRightContent();
+      updateCallStats();
+    }, line.words.length*65+400);
+    simTimeouts.push(ft);
+  }
+}
+
+// ── CALL CONTROLS ─────────────────────────────────────────────────────────────
+
+function toggleMute(){
+  muted=!muted;
+  const el=document.getElementById('ctrlMute');
+  if(el){
+    el.classList.toggle('on-mute',muted);
+    el.querySelector('.ctrl-ic').textContent=muted?'🔇':'🎙';
+    el.querySelector('.ctrl-lb').textContent=muted?'Unmute':'Mute';
+  }
+  toast(muted?'Microphone muted':'Microphone live', muted?'🔇':'🎙');
+}
+
+function toggleHold(){
+  onHold=!onHold;
+  const el=document.getElementById('ctrlHold');
+  if(el){
+    el.classList.toggle('on-hold',onHold);
+    el.querySelector('.ctrl-ic').textContent=onHold?'▶':'⏸';
+    el.querySelector('.ctrl-lb').textContent=onHold?'Resume':'Hold';
+  }
+  const wv=document.getElementById('waveform');
+  if(wv) wv.style.opacity=onHold?'0.2':'1';
+  toast(onHold?'Call on hold — customer hears music':'Call resumed','⏸');
+}
+
+function setDisp(d,el){
+  dispSelected=d;
+  document.querySelectorAll('.db').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function captureAndEnd(){
+  const notes=document.getElementById('callNotes')?.value||'';
+  const disp=dispSelected||'No Outcome';
+  toast(`Call logged: ${disp}${notes?` — ${notes.substring(0,25)}`:''}`,'📋');
+  endCall();
+}
+
+function endCall(){
+  callActive=false;
+  clearInterval(callInterval);
+  simTimeouts.forEach(t=>clearTimeout(t));
+  simTimeouts=[];
+
+  // back to profile
+  renderProfileStrip();
+  renderProfileDetail();
+  currentCoaching=COACHING_PRE;
+  renderRightContent();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+
+renderQueue();
+selectBorrower(1);
+
+// auto-select tab
+document.querySelectorAll('.r-tab').forEach(t=>{
+  t.onclick=function(){switchTab(this.dataset.tab,this)};
+});
+</script>
+</body>
+</html>

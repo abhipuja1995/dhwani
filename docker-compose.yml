@@ -1,0 +1,119 @@
+version: "3.9"
+
+services:
+  freeswitch:
+    build: ./freeswitch
+    container_name: dialer-fs
+    restart: unless-stopped
+    network_mode: host          # needed for RTP media ports
+    environment:
+      FS_DOMAIN: ${FS_DOMAIN:-localhost}
+      FS_WSS_PORT: ${FS_WSS_PORT:-7443}
+      TURN_HOST: ${TURN_HOST:-localhost}
+      TURN_PORT: ${TURN_PORT:-3478}
+      TURN_SECRET: ${TURN_SECRET:-changeme_turn_secret}
+    volumes:
+      - ./freeswitch/conf:/etc/freeswitch
+      - ./freeswitch/scripts:/usr/share/freeswitch/scripts
+      - fs_recordings:/var/lib/freeswitch/recordings
+    healthcheck:
+      test: ["CMD", "fs_cli", "-x", "status"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  coturn:
+    image: coturn/coturn:4.6
+    container_name: dialer-turn
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./coturn/turnserver.conf:/etc/coturn/turnserver.conf:ro
+    command: ["-c", "/etc/coturn/turnserver.conf"]
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: dialer-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: dialer
+      POSTGRES_USER: dialer
+      POSTGRES_PASSWORD: dialer
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dialer"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: dialer-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build: ./api
+    container_name: dialer-api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      SERVICE_TYPE: api
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./api:/app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  worker:
+    build: ./api
+    container_name: dialer-worker
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      SERVICE_TYPE: worker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./api:/app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  ui:
+    build: ./ui
+    container_name: dialer-ui
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      VITE_API_URL: http://localhost:8000
+      VITE_WS_URL: ws://localhost:8000
+      VITE_FS_WSS: wss://localhost:${FS_WSS_PORT:-7443}
+      VITE_FS_DOMAIN: ${FS_DOMAIN:-localhost}
+      VITE_TURN_HOST: ${TURN_HOST:-localhost}
+      VITE_TURN_PORT: ${TURN_PORT:-3478}
+      VITE_TURN_SECRET: ${TURN_SECRET:-changeme_turn_secret}
+    depends_on:
+      - api
+
+volumes:
+  pg_data:
+  fs_recordings:

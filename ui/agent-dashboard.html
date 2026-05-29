@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dhwani — My Performance</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f1f5f9;--surface:#fff;--border:#e2e8f0;
+  --text:#0f172a;--muted:#64748b;--subtle:#94a3b8;
+  --blue:#2563eb;--blue-lt:#eff6ff;--blue-md:#bfdbfe;
+  --green:#16a34a;--green-lt:#f0fdf4;--green-md:#bbf7d0;
+  --amber:#d97706;--amber-lt:#fffbeb;--amber-md:#fde68a;
+  --red:#dc2626;--red-lt:#fef2f2;--red-md:#fecaca;
+  --purple:#7c3aed;--purple-lt:#f5f3ff;--purple-md:#ddd6fe;
+  --radius:10px;
+  --shadow:0 1px 3px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.04);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.1);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+
+/* ── Topbar ── */
+.topbar{
+  background:#0f172a;color:#fff;
+  display:flex;align-items:center;gap:0;
+  padding:0 20px;height:50px;position:sticky;top:0;z-index:100;
+}
+.logo{font-size:17px;font-weight:800;letter-spacing:-.5px;margin-right:4px}
+.logo span{color:#60a5fa}
+.logo-sub{font-size:11px;color:#475569;font-weight:500;margin-right:20px}
+.topbar-nav{display:flex;gap:2px}
+.topbar-nav a{
+  color:#94a3b8;padding:6px 12px;border-radius:6px;text-decoration:none;
+  font-size:12px;font-weight:600;transition:.15s;cursor:pointer;
+}
+.topbar-nav a:hover{color:#e2e8f0;background:rgba(255,255,255,.07)}
+.topbar-nav a.active{color:#fff;background:rgba(255,255,255,.1)}
+.topbar-spacer{flex:1}
+.agent-selector-wrap{display:flex;align-items:center;gap:8px}
+.agent-selector-label{font-size:11px;color:#64748b}
+.agent-selector{
+  background:#1e293b;border:1px solid #334155;color:#e2e8f0;
+  border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;
+}
+.agent-selector:focus{outline:none;border-color:#3b82f6}
+
+/* ── Period Bar ── */
+.period-bar{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 20px;display:flex;align-items:center;gap:0;
+}
+.period-tabs{display:flex;gap:0}
+.ptab{
+  padding:14px 20px;font-size:13px;font-weight:600;
+  cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;
+  transition:.15s;white-space:nowrap;
+}
+.ptab:hover{color:var(--text)}
+.ptab.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:700}
+.period-spacer{flex:1}
+.period-context{font-size:12px;color:var(--muted);padding:14px 0}
+
+/* ── Content ── */
+.content{padding:20px;max-width:1400px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+
+/* ── Hero KPI row ── */
+.kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.kpi-card{
+  background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);
+  box-shadow:var(--shadow);padding:16px;position:relative;overflow:hidden;
+}
+.kpi-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--kpi-color,var(--border));
+}
+.kpi-label{font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.kpi-value{font-size:28px;font-weight:900;line-height:1;color:var(--text)}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:4px;display:flex;align-items:center;gap:4px}
+.delta{font-weight:700;font-size:11px}
+.delta.up{color:var(--green)}
+.delta.down{color:var(--red)}
+.delta.flat{color:var(--muted)}
+
+/* ── Main grid ── */
+.main-grid{display:grid;grid-template-columns:1fr 300px;gap:16px}
+.left-col{display:flex;flex-direction:column;gap:16px}
+.right-col{display:flex;flex-direction:column;gap:16px}
+
+/* ── Panel chrome ── */
+.panel{
+  background:var(--surface);border-radius:var(--radius);
+  border:1px solid var(--border);box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.panel-hd{
+  display:flex;align-items:center;gap:8px;
+  padding:14px 16px;border-bottom:1px solid var(--border);
+}
+.panel-title{font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+.panel-hd-right{margin-left:auto;font-size:11px;color:var(--muted)}
+.panel-body{padding:16px}
+
+/* ── Hourly chart ── */
+.chart-wrap{
+  display:flex;align-items:flex-end;gap:3px;height:100px;padding:0 4px;
+}
+.chart-col{display:flex;flex-direction:column;align-items:center;flex:1;gap:3px}
+.chart-bar-wrap{flex:1;display:flex;align-items:flex-end;width:100%}
+.chart-bar{
+  width:100%;border-radius:3px 3px 0 0;
+  background:var(--blue);opacity:.7;min-height:2px;
+  transition:height .4s ease,opacity .2s;
+}
+.chart-bar:hover{opacity:1}
+.chart-lbl{font-size:9px;color:var(--muted);white-space:nowrap}
+.chart-val{font-size:9px;font-weight:700;color:var(--blue);min-height:12px}
+
+/* ── Disposition bars ── */
+.disp-list{display:flex;flex-direction:column;gap:10px}
+.disp-item{display:flex;align-items:center;gap:10px}
+.disp-label{font-size:12px;color:var(--text);width:90px;flex-shrink:0;font-weight:500;text-transform:capitalize}
+.disp-bar-wrap{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.disp-bar{height:100%;border-radius:4px;transition:width .5s}
+.disp-count{font-size:12px;font-weight:700;color:var(--text);min-width:28px;text-align:right}
+.disp-pct{font-size:11px;color:var(--muted);min-width:32px;text-align:right}
+
+/* ── Call history table ── */
+.call-table{width:100%;border-collapse:collapse}
+.call-table th{
+  font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;
+  color:var(--muted);padding:8px 12px;text-align:left;
+  border-bottom:1px solid var(--border);background:#f8fafc;
+}
+.call-table td{
+  padding:9px 12px;border-bottom:1px solid var(--border);font-size:13px;
+  vertical-align:middle;
+}
+.call-table tr:last-child td{border-bottom:none}
+.call-table tr:hover td{background:#f8fafc}
+.outcome-chip{
+  padding:2px 8px;border-radius:20px;font-size:10px;font-weight:800;text-transform:uppercase;
+}
+.outcome-chip.ptp{background:var(--green-lt);color:var(--green)}
+.outcome-chip.callback{background:var(--blue-lt);color:var(--blue)}
+.outcome-chip.refused{background:var(--red-lt);color:var(--red)}
+.outcome-chip.no_answer{background:#f1f5f9;color:var(--muted)}
+.outcome-chip.dispute{background:var(--amber-lt);color:var(--amber)}
+.outcome-chip.wrong_no{background:#f1f5f9;color:var(--subtle)}
+.outcome-chip.completed{background:var(--green-lt);color:var(--green)}
+.duration-txt{font-family:monospace;font-size:12px;color:var(--muted)}
+.ptp-amt{font-weight:800;color:var(--green)}
+.empty-row td{text-align:center;padding:32px;color:var(--muted)}
+
+/* ── Rank card ── */
+.rank-card{padding:20px;text-align:center}
+.rank-medal{font-size:44px;line-height:1;margin-bottom:6px}
+.rank-num{font-size:36px;font-weight:900;line-height:1;color:var(--text)}
+.rank-label{font-size:12px;color:var(--muted);margin-bottom:12px}
+.rank-context{font-size:13px;color:var(--muted)}
+.rank-context strong{color:var(--text)}
+
+/* ── Target cards ── */
+.target-list{display:flex;flex-direction:column;gap:12px}
+.target-item{}
+.target-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.target-name{font-size:12px;font-weight:600;color:var(--text)}
+.target-vals{font-size:11px;color:var(--muted)}
+.target-done{font-size:11px;font-weight:800;color:var(--green)}
+.target-bar{height:7px;background:var(--border);border-radius:4px;overflow:hidden}
+.target-fill{height:100%;border-radius:4px;transition:width .6s ease}
+
+/* ── Streak / insight cards ── */
+.insight-card{
+  padding:14px 16px;border-radius:var(--radius);
+  border:1px solid var(--border);display:flex;align-items:flex-start;gap:12px;
+}
+.insight-icon{font-size:22px;flex-shrink:0;line-height:1;margin-top:2px}
+.insight-title{font-size:13px;font-weight:700;margin-bottom:2px}
+.insight-body{font-size:12px;color:var(--muted)}
+
+/* ── Skeleton loader ── */
+.skel{
+  background:linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%);
+  background-size:200% 100%;animation:skel-anim 1.5s infinite;border-radius:6px;
+}
+@keyframes skel-anim{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ── Scrollbars ── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- ── Topbar ── -->
+<nav class="topbar">
+  <span class="logo">Dhwani <span>Agent</span></span>
+  <span class="logo-sub">Collections Intelligence</span>
+  <div class="topbar-nav">
+    <a href="index.html">Agent</a>
+    <a class="active" href="#">My Performance</a>
+    <a href="admin.html">Admin Dashboard</a>
+  </div>
+  <div class="topbar-spacer"></div>
+  <div class="agent-selector-wrap">
+    <span class="agent-selector-label">Viewing:</span>
+    <select class="agent-selector" id="agentSel" onchange="switchAgent(this.value)">
+      <option value="">Loading agents…</option>
+    </select>
+  </div>
+</nav>
+
+<!-- ── Period Bar ── -->
+<div class="period-bar">
+  <div class="period-tabs">
+    <div class="ptab active" data-period="today"      onclick="setPeriod('today',this)">Today</div>
+    <div class="ptab"        data-period="yesterday"  onclick="setPeriod('yesterday',this)">Yesterday</div>
+    <div class="ptab"        data-period="week"       onclick="setPeriod('week',this)">This Week</div>
+    <div class="ptab"        data-period="month"      onclick="setPeriod('month',this)">This Month</div>
+    <div class="ptab"        data-period="ytd"        onclick="setPeriod('ytd',this)">Year to Date</div>
+  </div>
+  <div class="period-spacer"></div>
+  <div class="period-context" id="periodContext">Loading…</div>
+</div>
+
+<!-- ── Main content ── -->
+<div class="content">
+
+  <!-- KPI row -->
+  <div class="kpi-row" id="kpiRow">
+    <div class="kpi-card skel" style="height:90px"></div>
+    <div class="kpi-card skel" style="height:90px"></div>
+    <div class="kpi-card skel" style="height:90px"></div>
+    <div class="kpi-card skel" style="height:90px"></div>
+    <div class="kpi-card skel" style="height:90px"></div>
+    <div class="kpi-card skel" style="height:90px"></div>
+  </div>
+
+  <!-- Insights row -->
+  <div id="insightsRow" style="display:none;display:grid;grid-template-columns:repeat(3,1fr);gap:12px"></div>
+
+  <!-- Main grid -->
+  <div class="main-grid">
+
+    <!-- Left col -->
+    <div class="left-col">
+
+      <!-- Hourly activity chart -->
+      <div class="panel">
+        <div class="panel-hd">
+          <span class="panel-title">Call Activity</span>
+          <span class="panel-hd-right" id="chartSubtitle">Calls per hour</span>
+        </div>
+        <div class="panel-body">
+          <div class="chart-wrap" id="hourlyChart">
+            <div style="color:var(--muted);font-size:12px;padding:20px 0">Loading chart…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Disposition breakdown -->
+      <div class="panel">
+        <div class="panel-hd">
+          <span class="panel-title">Outcome Breakdown</span>
+          <span class="panel-hd-right" id="dispTotal"></span>
+        </div>
+        <div class="panel-body">
+          <div class="disp-list" id="dispList">
+            <div style="color:var(--muted);font-size:12px">Loading…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Call history -->
+      <div class="panel">
+        <div class="panel-hd">
+          <span class="panel-title">Call History</span>
+          <span class="panel-hd-right" id="callHistCount"></span>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="call-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Customer</th>
+                <th>Duration</th>
+                <th>Outcome</th>
+                <th>PTP Amount</th>
+              </tr>
+            </thead>
+            <tbody id="callHistBody">
+              <tr><td colspan="5" style="text-align:center;padding:24px;color:var(--muted)">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /left-col -->
+
+    <!-- Right col -->
+    <div class="right-col">
+
+      <!-- Rank card -->
+      <div class="panel">
+        <div class="panel-hd"><span class="panel-title">Team Rank</span></div>
+        <div class="rank-card" id="rankCard">
+          <div class="skel" style="height:80px;border-radius:8px"></div>
+        </div>
+      </div>
+
+      <!-- Targets -->
+      <div class="panel">
+        <div class="panel-hd">
+          <span class="panel-title">Targets</span>
+          <span class="panel-hd-right" id="targetsLabel"></span>
+        </div>
+        <div class="panel-body">
+          <div class="target-list" id="targetList">
+            <div style="color:var(--muted);font-size:12px">Loading…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Insights -->
+      <div class="panel">
+        <div class="panel-hd"><span class="panel-title">Insights</span></div>
+        <div class="panel-body" style="display:flex;flex-direction:column;gap:10px" id="insightsList">
+          <div style="color:var(--muted);font-size:12px">Loading…</div>
+        </div>
+      </div>
+
+    </div><!-- /right-col -->
+
+  </div><!-- /main-grid -->
+
+</div><!-- /content -->
+
+<script>
+const API = 'http://localhost:8000';
+
+// ── State ───────────────────────────────────────────────────────────────────
+const S = {
+  agentId: null,
+  agentName: '',
+  period: 'today',
+  stats: null,
+  calls: [],
+  agents: [],
+  demoMode: false,
+};
+
+// ── Period targets ───────────────────────────────────────────────────────────
+const TARGETS = {
+  today:     { calls: 20,    ptps: 5,    ptp_amount: 50000 },
+  yesterday: { calls: 20,    ptps: 5,    ptp_amount: 50000 },
+  week:      { calls: 100,   ptps: 25,   ptp_amount: 250000 },
+  month:     { calls: 400,   ptps: 100,  ptp_amount: 1000000 },
+  ytd:       { calls: 4800,  ptps: 1200, ptp_amount: 12000000 },
+};
+
+const PERIOD_LABELS = {
+  today:     'Today',
+  yesterday: 'Yesterday',
+  week:      'This Week',
+  month:     'This Month',
+  ytd:       'Year to Date',
+};
+
+// ── Demo data ────────────────────────────────────────────────────────────────
+const DEMO_CUSTOMERS = [
+  'Rajesh Kumar','Sunita Rao','Mohan Iyer','Kavita Mehta','Arjun Nair',
+  'Preethi Das','Vijay Verma','Anita Singh','Rohit Joshi','Ritu Gupta',
+  'Deepak Sharma','Meena Patel','Suresh Nair','Latha Krishnan','Arun Mishra',
+];
+const DEMO_PHONES = [
+  '+91 98765 43210','+91 87654 32109','+91 76543 21098',
+  '+91 91234 56789','+91 80000 12345','+91 99876 54321',
+];
+const DEMO_DISP = ['ptp','callback','no_answer','refused','ptp','callback','ptp','no_answer','dispute','ptp'];
+
+function demoStats(period) {
+  const m = {today:1, yesterday:0.85, week:5.2, month:22, ytd:270}[period] || 1;
+  const base_calls = Math.round(12 * m);
+  const connected  = Math.round(base_calls * 0.75);
+  const ptps       = Math.round(base_calls * 0.33);
+  const ptp_amt    = Math.round(ptps * 6200);
+
+  // Hourly: realistic bell curve peaking 10am–12pm and 2–5pm
+  const curve = {9:1,10:4,11:6,12:5,13:3,14:7,15:8,16:6,17:5,18:3,19:2,20:1};
+  const total = Object.values(curve).reduce((a,b)=>a+b,0);
+  const hourly = {};
+  let rem = base_calls;
+  const hours = Object.keys(curve).map(Number);
+  hours.forEach((h, i) => {
+    const share = Math.round(base_calls * curve[h] / total);
+    hourly[h] = i === hours.length-1 ? Math.max(0,rem) : share;
+    rem -= share;
+  });
+
+  return {
+    total_calls: base_calls,
+    connected,
+    connect_rate: 75,
+    ptp_count: ptps,
+    ptp_amount: ptp_amt,
+    ptp_rate: Math.round(ptps / base_calls * 100),
+    avg_handle_time: 265 + Math.round((Math.random()-0.5)*30),
+    total_talk_minutes: Math.round(base_calls * 4.4),
+    dispositions: {
+      ptp: ptps,
+      callback: Math.round(base_calls * 0.2),
+      no_answer: Math.round(base_calls * 0.15),
+      refused: Math.round(base_calls * 0.05),
+      dispute: Math.round(base_calls * 0.03),
+    },
+    hourly,
+    rank: 1,
+    total_agents: 2,
+  };
+}
+
+function demoCalls(period) {
+  const counts = {today:12, yesterday:10, week:62, month:264, ytd:3240}[period] || 12;
+  const shown  = Math.min(counts, 20);
+  const result = [];
+  const now = new Date();
+  const base = {today:0, yesterday:1, week:3, month:10, ytd:120}[period] || 0;
+
+  for (let i=0; i<shown; i++) {
+    const daysBack = base + Math.floor(i / 4);
+    const minsBack = (i % 4) * 35 + Math.round(Math.random()*20);
+    const ts = new Date(now - daysBack*86400000 - minsBack*60000);
+    const disp = DEMO_DISP[i % DEMO_DISP.length];
+    result.push({
+      id: 'demo-'+i,
+      customer_name: DEMO_CUSTOMERS[i % DEMO_CUSTOMERS.length],
+      customer_phone: DEMO_PHONES[i % DEMO_PHONES.length],
+      started_at: ts.toISOString(),
+      duration_seconds: 60 + Math.round(Math.random()*360),
+      disposition: disp,
+      ptp_amount: disp === 'ptp' ? [4200,6500,8000,9200,5800,7100][i%6] : null,
+    });
+  }
+  return result;
+}
+
+// ── API ──────────────────────────────────────────────────────────────────────
+async function apiFetch(path) {
+  try {
+    const r = await fetch(API + path);
+    if (!r.ok) return null;
+    return await r.json();
+  } catch { return null; }
+}
+
+async function loadAgents() {
+  const agents = await apiFetch('/agents/');
+  if (agents && agents.length) {
+    S.agents = agents;
+    const sel = document.getElementById('agentSel');
+    sel.innerHTML = agents.map(a =>
+      `<option value="${a.id}">${a.display_name}</option>`
+    ).join('');
+    // Read from URL or default to first
+    const params = new URLSearchParams(location.search);
+    const urlAgent = params.get('agent_id');
+    if (urlAgent && agents.find(a => a.id === urlAgent)) {
+      sel.value = urlAgent;
+      S.agentId = urlAgent;
+      S.agentName = agents.find(a=>a.id===urlAgent)?.display_name || '';
+    } else {
+      S.agentId = agents[0].id;
+      S.agentName = agents[0].display_name;
+    }
+  } else {
+    // No real agents — use demo mode
+    S.agentId = 'demo';
+    S.agentName = 'Priya Sharma';
+    S.demoMode = true;
+    document.getElementById('agentSel').innerHTML =
+      '<option value="demo">Priya Sharma (Demo)</option>';
+  }
+}
+
+async function loadData() {
+  if (!S.agentId) return;
+  updatePeriodContext();
+
+  if (S.demoMode || S.agentId === 'demo') {
+    S.stats = demoStats(S.period);
+    S.calls = demoCalls(S.period);
+  } else {
+    const [stats, calls] = await Promise.all([
+      apiFetch(`/agents/${S.agentId}/stats?period=${S.period}`),
+      apiFetch(`/agents/${S.agentId}/calls?period=${S.period}&limit=30`),
+    ]);
+    // Fall back to demo if API returns zeros (no real call data yet)
+    if (stats && stats.total_calls === 0) {
+      S.stats = demoStats(S.period);
+      S.calls = demoCalls(S.period);
+    } else {
+      S.stats = stats || demoStats(S.period);
+      S.calls = calls || demoCalls(S.period);
+    }
+  }
+
+  render();
+}
+
+// ── Render ───────────────────────────────────────────────────────────────────
+function render() {
+  renderKPIs();
+  renderHourlyChart();
+  renderDispositions();
+  renderCallHistory();
+  renderRank();
+  renderTargets();
+  renderInsights();
+}
+
+function renderKPIs() {
+  const st = S.stats;
+  if (!st) return;
+
+  // Comparison label
+  const cmp = {today:'vs yesterday',yesterday:'vs day before',week:'vs last week',month:'vs last month',ytd:'vs last year'}[S.period];
+
+  const cards = [
+    {
+      label:'Calls Made', value:st.total_calls, sub:`${st.total_talk_minutes} min talk time`,
+      color:'var(--blue)', delta: null,
+    },
+    {
+      label:'Connected', value:`${st.connect_rate}%`,
+      sub:`${st.connected} of ${st.total_calls} reached`, color:'var(--purple)',
+      delta: st.connect_rate > 70 ? '+good' : null,
+    },
+    {
+      label:'PTPs Secured', value: st.ptp_count, sub:`${st.ptp_rate}% conversion`,
+      color:'var(--green)', delta: null,
+    },
+    {
+      label:'₹ Secured', value: fmtAmt(st.ptp_amount), sub:'promise to pay',
+      color:'var(--green)', delta: null,
+    },
+    {
+      label:'Avg Handle Time', value: fmtDur(st.avg_handle_time),
+      sub:'per connected call', color:'var(--amber)', delta: null,
+    },
+    {
+      label:'Compliance', value:'97%', sub:'no violations today',
+      color:'var(--blue)', delta: null,
+    },
+  ];
+
+  document.getElementById('kpiRow').innerHTML = cards.map(c => `
+    <div class="kpi-card" style="--kpi-color:${c.color}">
+      <div class="kpi-label">${c.label}</div>
+      <div class="kpi-value">${c.value}</div>
+      <div class="kpi-sub">${c.sub}</div>
+    </div>`).join('');
+}
+
+function renderHourlyChart() {
+  const st = S.stats;
+  if (!st) return;
+  const hourly = st.hourly || {};
+  const maxVal = Math.max(...Object.values(hourly), 1);
+
+  // Show hours 9–20
+  const hours = [];
+  for (let h = 9; h <= 20; h++) hours.push(h);
+
+  const nowHour = new Date().getHours();
+
+  document.getElementById('hourlyChart').innerHTML = hours.map(h => {
+    const v = hourly[h] || 0;
+    const pct = Math.round(v / maxVal * 100);
+    const isCurrent = S.period === 'today' && h === nowHour;
+    const lbl = h < 12 ? `${h}a` : h === 12 ? '12p' : `${h-12}p`;
+    const barColor = isCurrent ? 'var(--purple)' : v > 0 ? 'var(--blue)' : 'var(--border)';
+    return `
+      <div class="chart-col">
+        <div class="chart-val">${v > 0 ? v : ''}</div>
+        <div class="chart-bar-wrap">
+          <div class="chart-bar" style="height:${pct}%;background:${barColor}" title="${v} calls at ${lbl}"></div>
+        </div>
+        <div class="chart-lbl">${lbl}</div>
+      </div>`;
+  }).join('');
+
+  // Subtitle
+  const peak = hours.reduce((best, h) => (hourly[h]||0) > (hourly[best]||0) ? h : best, 9);
+  const peakLbl = peak < 12 ? `${peak}am` : peak === 12 ? '12pm' : `${peak-12}pm`;
+  document.getElementById('chartSubtitle').textContent = `Peak: ${peakLbl} · ${st.total_calls} total`;
+}
+
+function renderDispositions() {
+  const st = S.stats;
+  if (!st) return;
+  const disp = st.dispositions || {};
+  const total = Object.values(disp).reduce((a,b) => a+b, 0);
+  document.getElementById('dispTotal').textContent = `${total} dispositioned`;
+
+  const CONFIG = {
+    ptp:       { label:'PTP',        color:'var(--green)' },
+    callback:  { label:'Callback',   color:'var(--blue)' },
+    no_answer: { label:'No Answer',  color:'var(--subtle)' },
+    refused:   { label:'Refused',    color:'var(--red)' },
+    dispute:   { label:'Dispute',    color:'var(--amber)' },
+    wrong_no:  { label:'Wrong No.',  color:'#94a3b8' },
+  };
+
+  const order = ['ptp','callback','no_answer','refused','dispute','wrong_no'];
+  const maxCount = Math.max(...Object.values(disp), 1);
+
+  if (total === 0) {
+    document.getElementById('dispList').innerHTML =
+      '<div style="color:var(--muted);font-size:12px;text-align:center;padding:16px 0">No dispositioned calls yet</div>';
+    return;
+  }
+
+  document.getElementById('dispList').innerHTML = order
+    .filter(k => disp[k] > 0)
+    .map(k => {
+      const c = CONFIG[k] || {label:k, color:'var(--blue)'};
+      const v = disp[k] || 0;
+      const pct = Math.round(v / maxCount * 100);
+      const pctOfTotal = Math.round(v / total * 100);
+      return `
+        <div class="disp-item">
+          <span class="disp-label">${c.label}</span>
+          <div class="disp-bar-wrap">
+            <div class="disp-bar" style="width:${pct}%;background:${c.color}"></div>
+          </div>
+          <span class="disp-count">${v}</span>
+          <span class="disp-pct">${pctOfTotal}%</span>
+        </div>`;
+    }).join('');
+}
+
+function renderCallHistory() {
+  const calls = S.calls || [];
+  document.getElementById('callHistCount').textContent = `${calls.length} calls`;
+
+  if (!calls.length) {
+    document.getElementById('callHistBody').innerHTML =
+      '<tr class="empty-row"><td colspan="5">No calls in this period</td></tr>';
+    return;
+  }
+
+  document.getElementById('callHistBody').innerHTML = calls.map(c => {
+    const ts = c.started_at ? new Date(c.started_at) : null;
+    const timeStr = ts ? ts.toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'}) : '—';
+    const dateStr = ts ? ts.toLocaleDateString('en-IN', {day:'numeric', month:'short'}) : '';
+    const needsDate = S.period !== 'today' && S.period !== 'yesterday';
+    const displayTime = needsDate && dateStr ? `${dateStr}, ${timeStr}` : timeStr;
+    const dur = fmtDur(c.duration_seconds || 0);
+    const disp = c.disposition || 'no_answer';
+    const dispLabel = {ptp:'PTP ✓',callback:'Callback',refused:'Refused',no_answer:'No Answer',dispute:'Dispute',wrong_no:'Wrong No.',completed:'Completed'}[disp] || disp;
+    const ptpAmt = c.ptp_amount ? `<span class="ptp-amt">₹${Number(c.ptp_amount).toLocaleString('en-IN')}</span>` : '<span style="color:var(--subtle)">—</span>';
+    return `
+      <tr>
+        <td style="white-space:nowrap;color:var(--muted);font-size:12px">${displayTime}</td>
+        <td>
+          <div style="font-weight:600">${esc(c.customer_name)}</div>
+          <div style="font-size:11px;color:var(--muted);font-family:monospace">${esc(c.customer_phone)}</div>
+        </td>
+        <td><span class="duration-txt">${dur}</span></td>
+        <td><span class="outcome-chip ${disp}">${dispLabel}</span></td>
+        <td>${ptpAmt}</td>
+      </tr>`;
+  }).join('');
+}
+
+function renderRank() {
+  const st = S.stats;
+  if (!st) return;
+  const medals = ['🥇','🥈','🥉'];
+  const medal = st.rank <= 3 ? medals[st.rank-1] : `#${st.rank}`;
+  const label = st.rank === 1 ? 'Top performer!' : st.rank === 2 ? 'Great work — almost #1' : 'Keep pushing!';
+
+  document.getElementById('rankCard').innerHTML = `
+    <div class="rank-medal">${medal}</div>
+    <div class="rank-num">${st.rank} <span style="font-size:18px;color:var(--muted)">of ${st.total_agents}</span></div>
+    <div class="rank-label">${PERIOD_LABELS[S.period]}</div>
+    <div class="rank-context">${label}<br>
+      <strong>${fmtAmt(st.ptp_amount)}</strong> secured ·
+      <strong>${st.ptp_count}</strong> PTPs
+    </div>`;
+}
+
+function renderTargets() {
+  const st = S.stats;
+  if (!st) return;
+  const tgt = TARGETS[S.period];
+  document.getElementById('targetsLabel').textContent = PERIOD_LABELS[S.period];
+
+  const items = [
+    {
+      name: 'Calls Made',
+      actual: st.total_calls,
+      target: tgt.calls,
+      color: 'var(--blue)',
+    },
+    {
+      name: 'PTPs Secured',
+      actual: st.ptp_count,
+      target: tgt.ptps,
+      color: 'var(--green)',
+    },
+    {
+      name: 'PTP Amount',
+      actual: st.ptp_amount,
+      target: tgt.ptp_amount,
+      fmt: v => fmtAmt(v),
+      color: 'var(--green)',
+    },
+    {
+      name: 'Connect Rate',
+      actual: st.connect_rate,
+      target: 75,
+      fmt: v => `${v}%`,
+      color: 'var(--purple)',
+    },
+  ];
+
+  document.getElementById('targetList').innerHTML = items.map(item => {
+    const pct = Math.min(100, Math.round(item.actual / item.target * 100));
+    const done = pct >= 100;
+    const fmt = item.fmt || (v => v);
+    return `
+      <div class="target-item">
+        <div class="target-hd">
+          <span class="target-name">${item.name}</span>
+          ${done
+            ? `<span class="target-done">✓ Done</span>`
+            : `<span class="target-vals">${fmt(item.actual)} / ${fmt(item.target)}</span>`
+          }
+        </div>
+        <div class="target-bar">
+          <div class="target-fill" style="width:${pct}%;background:${done?'var(--green)':item.color}"></div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderInsights() {
+  const st = S.stats;
+  if (!st) return;
+
+  const insights = [];
+
+  // Best hour
+  const hourly = st.hourly || {};
+  const bestHour = Object.entries(hourly).sort((a,b)=>b[1]-a[1])[0];
+  if (bestHour) {
+    const h = parseInt(bestHour[0]);
+    const lbl = h < 12 ? `${h}am` : h === 12 ? '12pm' : `${h-12}pm`;
+    insights.push({
+      icon: '⏰',
+      title: `Peak productivity: ${lbl}`,
+      body: `You made ${bestHour[1]} calls in your best hour. Schedule your toughest calls then.`,
+    });
+  }
+
+  // PTP rate insight
+  if (st.ptp_rate >= 30) {
+    insights.push({
+      icon: '🎯',
+      title: `Strong conversion — ${st.ptp_rate}% PTP rate`,
+      body: `Above the 25% team benchmark. Keep using the 2-installment offer.`,
+    });
+  } else {
+    insights.push({
+      icon: '💡',
+      title: 'Boost conversions with installment plans',
+      body: `Your ${st.ptp_rate}% PTP rate has room to grow. Try offering 2–3 installment splits.`,
+    });
+  }
+
+  // AHT
+  if (st.avg_handle_time < 240) {
+    insights.push({
+      icon: '⚡',
+      title: 'Efficient calls',
+      body: `Avg ${fmtDur(st.avg_handle_time)} per call. Make sure PTPs are being properly captured before wrap-up.`,
+    });
+  } else if (st.avg_handle_time > 420) {
+    insights.push({
+      icon: '🕐',
+      title: 'Long handle times',
+      body: `Avg ${fmtDur(st.avg_handle_time)}. Use the script template to move faster toward commitment.`,
+    });
+  } else {
+    insights.push({
+      icon: '✅',
+      title: 'Healthy call rhythm',
+      body: `${fmtDur(st.avg_handle_time)} average — enough time to build rapport and secure PTPs.`,
+    });
+  }
+
+  document.getElementById('insightsList').innerHTML = insights.map(i => `
+    <div class="insight-card">
+      <div class="insight-icon">${i.icon}</div>
+      <div>
+        <div class="insight-title">${i.title}</div>
+        <div class="insight-body">${i.body}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ── Controls ─────────────────────────────────────────────────────────────────
+function setPeriod(p, el) {
+  S.period = p;
+  document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  loadData();
+}
+
+function switchAgent(id) {
+  S.agentId = id;
+  const agent = S.agents.find(a => a.id === id);
+  S.agentName = agent?.display_name || '';
+  loadData();
+}
+
+function updatePeriodContext() {
+  const now = new Date();
+  const ctxMap = {
+    today: `${now.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'short'})}`,
+    yesterday: 'Yesterday',
+    week: `Week of ${getMonday().toLocaleDateString('en-IN',{day:'numeric',month:'short'})}`,
+    month: now.toLocaleDateString('en-IN',{month:'long',year:'numeric'}),
+    ytd: `Jan 1 – ${now.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}`,
+  };
+  document.getElementById('periodContext').textContent = ctxMap[S.period] || '';
+}
+
+function getMonday() {
+  const d = new Date();
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  return new Date(d.setDate(diff));
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function fmtAmt(n) {
+  if (!n) return '₹0';
+  if (n >= 10000000) return `₹${(n/10000000).toFixed(1)}Cr`;
+  if (n >= 100000)   return `₹${(n/100000).toFixed(1)}L`;
+  if (n >= 1000)     return `₹${(n/1000).toFixed(1)}K`;
+  return `₹${n}`;
+}
+function fmtDur(secs) {
+  if (!secs) return '0:00';
+  const m = Math.floor(secs/60), s = secs%60;
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+(async () => {
+  await loadAgents();
+  await loadData();
+})();
+</script>
+</body>
+</html>

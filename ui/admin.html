@@ -1030,10 +1030,11 @@ async function autoAssign() {
   const url = '/admin/leads/auto-assign' + (campId ? `?campaign_id=${campId}` : '');
   const r = await apiFetch(url, {method:'POST'});
   if (r) {
-    toast(`⚡ ${r.message}`, 'success');
-    await refreshAll();
+    const level = r.assigned > 0 ? 'success' : 'warn';
+    toast(`⚡ ${r.message}`, level);
+    if (r.assigned > 0) await refreshAll();
   } else {
-    toast('Auto-assign failed — no available agents?', 'warn');
+    toast('Auto-assign failed — check API connection', 'error');
   }
 }
 
@@ -1118,9 +1119,26 @@ function toggleDemo() {
   }
 }
 
+const DEMO_AGENTS = [
+  {id:'demo-1', username:'rverma',   display_name:'Rohit Verma',   skills:[], status:'available', current_call:null, assigned_leads:2, today:{calls:4,ptps:1,ptp_amount:8500,avg_handle_time:210}},
+  {id:'demo-2', username:'psingh',   display_name:'Priya Singh',   skills:[], status:'available', current_call:null, assigned_leads:1, today:{calls:3,ptps:0,ptp_amount:0,avg_handle_time:195}},
+  {id:'demo-3', username:'akumar',   display_name:'Amit Kumar',    skills:[], status:'available', current_call:null, assigned_leads:3, today:{calls:5,ptps:2,ptp_amount:17000,avg_handle_time:240}},
+  {id:'demo-4', username:'sneha_d',  display_name:'Sneha Desai',   skills:[], status:'available', current_call:null, assigned_leads:0, today:{calls:2,ptps:0,ptp_amount:0,avg_handle_time:180}},
+];
+const DEMO_CAMPAIGNS_DATA = [
+  {id:'demo-c1', name:'Collections Q2 - North',  status:'active',  dial_mode:'progressive', total_contacts:500, dialed:210, answered:142, dropped:6,  current_drop_rate:0.028, dial_ratio:1.5, created_at: new Date().toISOString(), updated_at: new Date().toISOString()},
+  {id:'demo-c2', name:'EMI Reminder - South',    status:'active',  dial_mode:'preview',     total_contacts:320, dialed:88,  answered:61,  dropped:2,  current_drop_rate:0.023, dial_ratio:1.0, created_at: new Date().toISOString(), updated_at: new Date().toISOString()},
+  {id:'demo-c3', name:'Premium Defaults - West', status:'paused',  dial_mode:'predictive',  total_contacts:180, dialed:45,  answered:29,  dropped:1,  current_drop_rate:0.022, dial_ratio:2.0, created_at: new Date().toISOString(), updated_at: new Date().toISOString()},
+];
+
 function startDemo() {
   S.demoPtps = 0; S.demoPtpAmt = 0; S.demoCallsToday = 0;
   S.demoState = {};
+
+  // Seed synthetic data when the API returned nothing (fresh/empty environment)
+  if (!S.agents.length)    S.agents    = DEMO_AGENTS.map(a => ({...a}));
+  if (!S.campaigns.length) S.campaigns = DEMO_CAMPAIGNS_DATA.map(c => ({...c}));
+
   const agents = S.agents;
 
   // Initial state: first 2-3 agents in_call, rest available

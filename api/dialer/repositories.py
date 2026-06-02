@@ -163,9 +163,20 @@ class AgentRepo:
         )
 
     async def next_available(self, campaign_id: str = None) -> Optional[Agent]:
-        result = await self.db.execute(
-            select(Agent).where(Agent.status == "available").limit(1)
-        )
+        q = select(Agent).where(Agent.status == "available")
+        if campaign_id:
+            # Prefer agents who already have pending leads from this campaign assigned to them;
+            # fall back to any available agent if none match.
+            from dialer.tables import Contact
+            preferred = await self.db.execute(
+                q.join(Contact, (Contact.assigned_agent_id == Agent.id) &
+                       (Contact.campaign_id == campaign_id) &
+                       (Contact.status == "pending")).limit(1)
+            )
+            agent = preferred.scalar_one_or_none()
+            if agent:
+                return agent
+        result = await self.db.execute(q.limit(1))
         return result.scalar_one_or_none()
 
     async def available_count(self) -> int:

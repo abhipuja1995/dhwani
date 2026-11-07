@@ -10,7 +10,10 @@ import asyncio
 import logging
 import threading
 from typing import Callable, Optional
-import ESL
+try:
+    import ESL
+except ImportError:
+    ESL = None
 
 from dialer.config import settings
 
@@ -36,6 +39,8 @@ class ESLClient:
         log.info("ESL event thread started")
 
     def _make_conn(self) -> ESL.ESLconnection:
+        if ESL is None:
+            raise RuntimeError("ESL library is not installed")
         conn = ESL.ESLconnection(
             settings.fs_host,
             str(settings.fs_esl_port),

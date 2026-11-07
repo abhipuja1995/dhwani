@@ -23,7 +23,7 @@ class Settings(BaseSettings):
 
     # API security
     api_secret_key: str = "changeme_api_secret"
-    cors_origins: str = "http://localhost:3000,http://localhost:5173"
+    cors_origins: str = "http://localhost:3001,http://localhost:3000,http://localhost:5173"
 
     # SIP trunk (optional)
     sip_trunk_host: str = ""

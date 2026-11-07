@@ -1,9 +1,4 @@
-FROM signalwire/freeswitch:v1.10
-
-# Install ESL Python library
-RUN apt-get update && apt-get install -y python3-pip && \
-    pip3 install ESL && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+FROM safarov/freeswitch:latest
 
 # Default config is replaced by volume mount
 # TLS certs are generated at runtime by entrypoint

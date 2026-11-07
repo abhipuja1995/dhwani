@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   freeswitch:
     build: ./freeswitch
@@ -102,7 +100,7 @@ services:
     container_name: dialer-ui
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3001:3001"
     environment:
       VITE_API_URL: http://localhost:8000
       VITE_WS_URL: ws://localhost:8000

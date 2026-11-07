@@ -16,7 +16,6 @@ dependencies = [
     "pydantic-settings>=2.3",
     "redis[hiredis]>=5.0",
     "celery[redis]>=5.4",
-    "ESL>=1.1.0",              # FreeSWITCH Event Socket Library
     "httpx>=0.27",
     "python-multipart>=0.0.9",
     "python-jose[cryptography]>=3.3",
@@ -24,6 +23,7 @@ dependencies = [
     "phonenumbers>=8.13",      # phone number parsing + E.164 normalization
     "pandas>=2.2",             # CSV contact list parsing
     "aiofiles>=23.0",
+    "aiosqlite>=0.20",
 ]
 
 [tool.hatch.build.targets.wheel]

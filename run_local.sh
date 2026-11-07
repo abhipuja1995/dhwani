@@ -3,7 +3,7 @@
 #  Dhwani Dialer — local dev starter (no Docker required)
 #
 #  Starts:
-#    :3000  →  Agent UI  (static HTML, Python http.server)
+#    :3001  →  Agent UI  (static HTML, Python http.server)
 #    :8000  →  API       (FastAPI + SQLite, uvicorn)
 #
 #  Usage:
@@ -25,22 +25,26 @@ echo ""
 
 # ── kill any previous instances ───────────────────────────────────
 echo -e "  Cleaning up old processes…"
-pkill -f "http.server 3000" 2>/dev/null || true
+pkill -f "http.server 3001" 2>/dev/null || true
 pkill -f "uvicorn dialer" 2>/dev/null || true
 sleep 0.5
 
 # ── start UI (static files) ───────────────────────────────────────
 UI_DIR="$SCRIPT_DIR/ui"
-echo -e "  ${GREEN}►${NC} Starting UI on ${BOLD}http://localhost:3000${NC}"
-python3 -m http.server 3000 --directory "$UI_DIR" \
+echo -e "  ${GREEN}►${NC} Starting UI on ${BOLD}http://localhost:3001${NC}"
+python3 -m http.server 3001 --directory "$UI_DIR" \
   > /tmp/dialer_ui.log 2>&1 &
 UI_PID=$!
 
 # ── start API (FastAPI + SQLite) ──────────────────────────────────
 API_DIR="$SCRIPT_DIR/api"
+PYTHON_BIN="python3"
+if [ -f "$API_DIR/.venv/bin/python" ]; then
+  PYTHON_BIN="$API_DIR/.venv/bin/python"
+fi
 echo -e "  ${GREEN}►${NC} Starting API on ${BOLD}http://localhost:8000${NC}"
 cd "$API_DIR"
-LOCAL=1 python3 -m uvicorn dialer.main_local:app \
+LOCAL=1 "$PYTHON_BIN" -m uvicorn dialer.main_local:app \
   --host 0.0.0.0 --port 8000 \
   > /tmp/dialer_api.log 2>&1 &
 API_PID=$!
@@ -58,7 +62,7 @@ done
 
 echo ""
 echo -e "  ┌──────────────────────────────────────────┐"
-echo -e "  │  ${BOLD}Agent UI${NC}   →  http://localhost:3000      │"
+echo -e "  │  ${BOLD}Agent UI${NC}   →  http://localhost:3001      │"
 echo -e "  │  ${BOLD}API docs${NC}   →  http://localhost:8000/docs  │"
 echo -e "  │  ${BOLD}Health${NC}     →  http://localhost:8000/health │"
 echo -e "  └──────────────────────────────────────────┘"
@@ -70,7 +74,7 @@ echo ""
 # ── open browser ──────────────────────────────────────────────────
 if command -v open >/dev/null 2>&1; then
   sleep 0.5
-  open http://localhost:3000
+  open http://localhost:3001
 fi
 
 # ── wait for Ctrl+C ───────────────────────────────────────────────

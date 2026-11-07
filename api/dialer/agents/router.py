@@ -154,7 +154,7 @@ def _period_range(period: str) -> tuple[datetime, datetime]:
 @router.get("/{agent_id}/stats")
 async def agent_stats(
     agent_id: str,
-    period: str = Query("today", regex="^(today|yesterday|week|month|ytd)$"),
+    period: str = Query("today", pattern="^(today|yesterday|week|month|ytd)$"),
     repos: Repos = Depends(get_repos),
 ):
     """Aggregated performance stats for an agent over a time period."""
@@ -265,7 +265,7 @@ async def agent_stats(
 @router.get("/{agent_id}/calls")
 async def agent_calls(
     agent_id: str,
-    period: str = Query("today", regex="^(today|yesterday|week|month|ytd)$"),
+    period: str = Query("today", pattern="^(today|yesterday|week|month|ytd)$"),
     limit: int = Query(30, le=100),
     repos: Repos = Depends(get_repos),
 ):

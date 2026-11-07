@@ -27,6 +27,9 @@ pip-wheel-metadata/
 # FreeSWITCH generated certs
 freeswitch/conf/ssl/
 freeswitch/conf/*.pem
+freeswitch/conf/tls/
+node_modules/
+celerybeat-schedule*
 freeswitch/conf/*.key
 freeswitch/conf/*.crt
 

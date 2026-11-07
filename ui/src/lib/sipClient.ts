@@ -8,6 +8,8 @@
  *   sip.call("+919876543210");
  */
 import JsSIP from "jssip";
+import type { UA } from "jssip/lib/UA";
+import type { RTCSession } from "jssip/lib/RTCSession";
 
 export interface SipConfig {
   wsUri: string;        // wss://freeswitch-host:7443
@@ -21,13 +23,13 @@ export interface SipConfig {
 export type CallState = "idle" | "calling" | "ringing" | "in_call" | "hold";
 
 export class SipClient {
-  private ua: JsSIP.UA | null = null;
-  private session: JsSIP.RTCSession | null = null;
+  private ua: UA | null = null;
+  private session: RTCSession | null = null;
   private remoteAudio: HTMLAudioElement;
   public state: CallState = "idle";
 
   onStateChange?: (state: CallState) => void;
-  onIncoming?: (session: JsSIP.RTCSession) => void;
+  onIncoming?: (session: RTCSession) => void;
   onRegistered?: () => void;
   onUnregistered?: () => void;
 
@@ -59,7 +61,7 @@ export class SipClient {
       this.onUnregistered?.();
     });
 
-    this.ua.on("newRTCSession", ({ session }: { session: JsSIP.RTCSession }) => {
+    this.ua.on("newRTCSession", ({ session }: { session: RTCSession }) => {
       if (session.direction === "incoming") {
         this.session = session;
         this._setState("ringing");
@@ -83,7 +85,7 @@ export class SipClient {
       mediaConstraints: { audio: true, video: false },
       pcConfig: { iceServers: this.config.iceServers },
       rtcOfferConstraints: { offerToReceiveAudio: true, offerToReceiveVideo: false },
-    }) as JsSIP.RTCSession;
+    }) as unknown as RTCSession;
 
     this.session = session;
     this._setState("calling");
@@ -123,7 +125,7 @@ export class SipClient {
     this.session?.sendDTMF(tone);
   }
 
-  private _wireSession(session: JsSIP.RTCSession) {
+  private _wireSession(session: RTCSession) {
     session.on("accepted", () => this._setState("in_call"));
     session.on("confirmed", () => this._setState("in_call"));
     session.on("ended", () => {
